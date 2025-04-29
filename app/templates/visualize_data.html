@@ -1,11 +1,278 @@
 {% extends 'base.html' %}
 
-{% block title %}Visualize Data - NutriPlanner{% endblock %}
+{% block title %}Nutrition Analytics - NutriPlanner{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Visualize Your Data</h1>
-    <p>Charts coming soon!</p>
-    <a href="{{ url_for('routes.index') }}" class="btn btn-secondary m-2">Back to Home</a>
+<div class="container my-5">
+    <h1 class="mb-4 text-center">Your Nutrition Analytics</h1>
+    
+    {% if login_required_for_real_data %}
+    <!-- Login Prompt Card for Guests -->
+    <div class="card bg-dark border-primary mb-5">
+        <div class="card-body p-4 text-center">
+            <h4 class="text-primary"><i class="fas fa-info-circle me-2"></i>Guest User Mode</h4>
+            <p class="mb-4">You're currently viewing sample data. To track your own nutritional data and generate personal insights:</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('routes.login') }}" class="btn btn-primary px-4">
+                    <i class="fas fa-sign-in-alt me-2"></i> Log In
+                </a>
+                <a href="{{ url_for('routes.register') }}" class="btn btn-outline-primary px-4">
+                    <i class="fas fa-user-plus me-2"></i> Create Account
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Analytics Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="card stats-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="stats-icon bg-primary bg-opacity-25 text-primary mx-auto">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <h2 class="stats-value">{{ stats.entries_count }}</h2>
+                            <p class="stats-label">Tracked Days</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card stats-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="stats-icon bg-success bg-opacity-25 text-success mx-auto">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <h2 class="stats-value">{{ stats.avg_calories }}</h2>
+                            <p class="stats-label">Avg. Daily Calories</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card stats-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="stats-icon bg-info bg-opacity-25 text-info mx-auto">
+                                <i class="fas fa-drumstick-bite"></i>
+                            </div>
+                            <h2 class="stats-value">{{ stats.avg_protein }}g</h2>
+                            <p class="stats-label">Avg. Daily Protein</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card stats-card bg-dark">
+                        <div class="card-body text-center p-4">
+                            <div class="stats-icon bg-warning bg-opacity-25 text-warning mx-auto">
+                                <i class="fas fa-bread-slice"></i>
+                            </div>
+                            <h2 class="stats-value">{{ stats.avg_carbs }}g</h2>
+                            <p class="stats-label">Avg. Daily Carbs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No Data Message -->
+            {% if not login_required_for_real_data %}
+            <div id="no-data-message" class="alert alert-info text-center mb-4" style="display: none;">
+                <i class="fas fa-info-circle me-2"></i>
+                <span>You haven't uploaded any nutrition data yet. <a href="{{ url_for('routes.upload_data') }}">Upload your data</a> to see analytics.</span>
+            </div>
+            {% endif %}
+            
+            <!-- Chart Container -->
+            <div id="charts-container">
+                <div class="row mb-5">
+                    <div class="col-md-12">
+                        <div class="card bg-dark shadow-sm">
+                            <div class="card-header bg-primary bg-opacity-75">
+                                <h4 class="card-title mb-0">Calorie Intake Trend</h4>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="chart-container">
+                                    <canvas id="calories-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-5">
+                    <div class="col-md-8">
+                        <div class="card bg-dark shadow-sm h-100">
+                            <div class="card-header bg-success bg-opacity-75">
+                                <h4 class="card-title mb-0">Macronutrient Breakdown</h4>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="chart-container">
+                                    <canvas id="macro-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-dark shadow-sm h-100">
+                            <div class="card-header bg-info bg-opacity-75">
+                                <h4 class="card-title mb-0">Macro Distribution</h4>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="chart-container">
+                                    <canvas id="macro-distribution-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Data Table -->
+            {% if dietary_data %}
+                <div class="card bg-dark shadow-sm mb-4">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Recent Nutrition Data</h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Calories</th>
+                                        <th>Protein</th>
+                                        <th>Carbs</th>
+                                        <th>Fat</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in dietary_data[:7] %}
+                                        <tr>
+                                            <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ entry.calories }}</td>
+                                            <td>{{ entry.protein }}g</td>
+                                            <td>{{ entry.carbs }}g</td>
+                                            <td>{{ entry.fat }}g</td>
+                                            <td>{{ entry.notes[:30] + '...' if entry.notes and entry.notes|length > 30 else entry.notes }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if meal_plan %}
+                <div class="card bg-dark shadow-sm mb-4">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Compare with Latest Meal Plan</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Your Latest Meal Plan</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Diet Type:</span>
+                                            <strong>{{ meal_plan.diet_type }}</strong>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Target Calories:</span>
+                                            <strong>{{ meal_plan.target_calories }}</strong>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Created On:</span>
+                                            <strong>{{ meal_plan.date_created.strftime('%Y-%m-%d') }}</strong>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <a href="{{ url_for('routes.meal_plan') }}" class="btn btn-primary mt-3">
+                                    <i class="fas fa-utensils me-2"></i> View Meal Plan
+                                </a>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Actual vs. Target</h5>
+                                {% if stats.entries_count > 0 %}
+                                    <div class="progress mb-3" style="height: 25px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ (stats.avg_calories / meal_plan.target_calories * 100)|round|int if meal_plan.target_calories > 0 else 0 }}%;" 
+                                             aria-valuenow="{{ stats.avg_calories }}" aria-valuemin="0" aria-valuemax="{{ meal_plan.target_calories }}">
+                                            {{ stats.avg_calories }} / {{ meal_plan.target_calories }} calories
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mb-0">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-info-circle fa-2x me-3"></i>
+                                            <div>
+                                                {% if stats.avg_calories > meal_plan.target_calories * 1.1 %}
+                                                    <p class="mb-0">Your average calorie intake is <strong>{{ ((stats.avg_calories / meal_plan.target_calories - 1) * 100)|round|int }}% higher</strong> than your target.</p>
+                                                {% elif stats.avg_calories < meal_plan.target_calories * 0.9 %}
+                                                    <p class="mb-0">Your average calorie intake is <strong>{{ ((1 - stats.avg_calories / meal_plan.target_calories) * 100)|round|int }}% lower</strong> than your target.</p>
+                                                {% else %}
+                                                    <p class="mb-0">Your average calorie intake is <strong>within 10%</strong> of your target. Great job!</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning mb-0">
+                                        <p class="mb-0">Upload your daily nutrition data to compare with your meal plan target.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                {% if not login_required_for_real_data %}
+                    <a href="{{ url_for('routes.upload_data') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-upload me-2"></i> Upload More Data
+                    </a>
+                    
+                    {% if has_shared_data %}
+                        <a href="{{ url_for('routes.shared_with_me') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-users me-2"></i> View Shared Data
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('routes.share_data') }}" class="btn btn-primary">
+                        <i class="fas fa-share-alt me-2"></i> Share Your Data
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('routes.meal_plan') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-utensils me-2"></i> Generate Meal Plan
+                    </a>
+                    
+                    <div>
+                        <a href="{{ url_for('routes.login') }}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i> Login to Track Your Data
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Hidden chart data for JavaScript -->
+            <div id="chart-data" data-chart='{{ chart_data }}' style="display: none;"></div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chart-config.js') }}"></script>
 {% endblock %}
