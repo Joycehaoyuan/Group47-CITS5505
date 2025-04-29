@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Shared With Me - NutriPlanner{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Data Shared With You</h1>
+    <p>Here you will find data others shared with you.</p>
+    <a href="{{ url_for('routes.index') }}" class="btn btn-secondary m-2">Back to Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+body {
+    background-color: #f5f9f1; 
+    color: #333333; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    background-color: #ffffff !important;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 8px 16px;
+    background-color: #8cc63f;
+    border: none;
+    color: white;
+}
+
+.btn:hover {
+    background-color: #6ca32c;
+}

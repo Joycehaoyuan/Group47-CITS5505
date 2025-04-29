@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - NutriPlanner{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Welcome to NutriPlanner!</h1>
+    <p>Choose what you want to do:</p>
+    <a href="{{ url_for('routes.upload_data') }}" class="btn btn-primary m-2">Upload Data</a>
+    <a href="{{ url_for('routes.visualize_data') }}" class="btn btn-success m-2">Visualize Data</a>
+    <a href="{{ url_for('routes.meal_plan') }}" class="btn btn-warning m-2">Meal Plan</a>
+</div>
+{% endblock %}
