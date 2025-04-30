@@ -1,11 +1,142 @@
 {% extends 'base.html' %}
 
-{% block title %}Profile - NutriPlanner{% endblock %}
+{% block title %}Your Profile - NutriPlanner{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>User Profile</h1>
-    <p>Your personal information will appear here.</p>
-    <a href="{{ url_for('routes.index') }}" class="btn btn-secondary m-2">Back to Home</a>
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card bg-dark shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-4 mb-md-0">
+                            <div class="rounded-circle bg-primary bg-opacity-25 text-white p-4 mx-auto mb-3" style="width: 120px; height: 120px;">
+                                <i class="fas fa-user fa-4x"></i>
+                            </div>
+                            <h4>{{ current_user.username }}</h4>
+                            <p class="text-muted">Member since {{ current_user.date_joined.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        
+                        <div class="col-md-9">
+                            <h3 class="mb-4">Account Information</h3>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Username</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ current_user.username }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Email</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ current_user.email }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Member Since</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ current_user.date_joined.strftime('%B %d, %Y') }}
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h3 class="mb-4">Your Activity</h3>
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="card bg-dark bg-opacity-50">
+                                        <div class="card-body text-center">
+                                            <div class="rounded-circle bg-primary bg-opacity-25 text-primary p-3 mx-auto mb-3" style="width: 70px; height: 70px;">
+                                                <i class="fas fa-utensils fa-2x"></i>
+                                            </div>
+                                            <h3>{{ meal_plan_count }}</h3>
+                                            <p class="mb-0">Meal Plans Created</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card bg-dark bg-opacity-50">
+                                        <div class="card-body text-center">
+                                            <div class="rounded-circle bg-success bg-opacity-25 text-success p-3 mx-auto mb-3" style="width: 70px; height: 70px;">
+                                                <i class="fas fa-calendar-day fa-2x"></i>
+                                            </div>
+                                            <h3>{{ data_entry_count }}</h3>
+                                            <p class="mb-0">Dietary Data Entries</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card bg-dark shadow-sm h-100">
+                        <div class="card-header bg-primary bg-opacity-75">
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-utensils me-2"></i> Meal Planning
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Create custom meal plans based on your dietary preferences and calorie targets.</p>
+                            <a href="{{ url_for('routes.meal_plan') }}" class="btn btn-primary w-100">
+                                Generate Meal Plan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card bg-dark shadow-sm h-100">
+                        <div class="card-header bg-success bg-opacity-75">
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i> Nutrition Analytics
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <p>Track your nutrition trends with interactive charts and detailed statistics.</p>
+                            <a href="{{ url_for('routes.visualize_data') }}" class="btn btn-success w-100">
+                                View Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card bg-dark shadow-sm h-100">
+                        <div class="card-header bg-info bg-opacity-75">
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-users me-2"></i> Shared Data
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <p>View nutrition data and meal plans shared with you by other users.</p>
+                            <a href="{{ url_for('routes.shared_with_me') }}" class="btn btn-info w-100">
+                                Shared With Me
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 mt-4">
+                <a href="{{ url_for('routes.logout') }}" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
