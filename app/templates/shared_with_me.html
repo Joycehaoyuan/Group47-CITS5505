@@ -3,9 +3,188 @@
 {% block title %}Shared With Me - NutriPlanner{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Data Shared With You</h1>
-    <p>Here you will find data others shared with you.</p>
-    <a href="{{ url_for('routes.index') }}" class="btn btn-secondary m-2">Back to Home</a>
+<div class="container my-5">
+    <h1 class="mb-4 text-center">Data Shared With You</h1>
+    
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            {% if shared_items %}
+                <ul class="nav nav-tabs mb-4" id="sharedDataTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="meal-plans-tab" data-bs-toggle="tab" data-bs-target="#meal-plans" type="button" role="tab" aria-controls="meal-plans" aria-selected="true">
+                            <i class="fas fa-utensils me-2"></i> Shared Meal Plans
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="dietary-data-tab" data-bs-toggle="tab" data-bs-target="#dietary-data" type="button" role="tab" aria-controls="dietary-data" aria-selected="false">
+                            <i class="fas fa-chart-pie me-2"></i> Shared Dietary Data
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="sharedDataTabsContent">
+                    <!-- Shared Meal Plans Tab -->
+                    <div class="tab-pane fade show active" id="meal-plans" role="tabpanel" aria-labelledby="meal-plans-tab">
+                        {% set meal_plan_items = shared_items|selectattr('share.data_type', 'equalto', 'meal_plan')|list %}
+                        
+                        {% if meal_plan_items %}
+                            {% for item in meal_plan_items %}
+                                <div class="card bg-dark shadow-sm mb-4">
+                                    <div class="card-header bg-primary bg-opacity-75">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4 class="card-title mb-0">{{ item.data.name }}</h4>
+                                            <span class="badge bg-secondary">Shared by: {{ item.owner.username }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <div class="mb-3">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p class="mb-1"><strong>Diet Type:</strong> {{ item.data.diet_type }}</p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p class="mb-1"><strong>Target Calories:</strong> {{ item.data.target_calories }}</p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p class="mb-1"><strong>Meal Count:</strong> {{ item.data.meal_count }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h5 class="mb-3">Meals</h5>
+                                        <div class="row">
+                                            {% for meal in item.meals %}
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card bg-dark bg-opacity-50">
+                                                        <div class="card-header">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <h5 class="mb-0">{{ meal.name }}</h5>
+                                                                <span class="badge bg-light text-dark">{{ meal.total_calories }} calories</span>
+                                                            </div>
+                                                        </div>
+                                                        <ul class="list-group list-group-flush">{% for food in meal.foods %}
+                                                                <li class="list-group-item bg-transparent">
+                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                        <div>
+                                                                            <strong>{{ food.name }}</strong>
+                                                                            <small class="d-block text-muted">{{ food.serving }}</small>
+                                                                        </div>
+                                                                        <span class="badge bg-dark">{{ food.calories }} cal</span>
+                                                                    </div>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                        <div class="card-footer text-center">
+                                                            <div class="d-flex justify-content-between">
+                                                                <span class="badge bg-primary">Protein: {{ meal.total_protein }}g</span>
+                                                                <span class="badge bg-success">Carbs: {{ meal.total_carbs }}g</span>
+                                                                <span class="badge bg-warning">Fat: {{ meal.total_fat }}g</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <div class="text-muted mt-2">
+                                            <small>Shared on: {{ item.share.share_date.strftime('%Y-%m-%d') }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No meal plans have been shared with you yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Shared Dietary Data Tab -->
+                    <div class="tab-pane fade" id="dietary-data" role="tabpanel" aria-labelledby="dietary-data-tab">
+                        {% set dietary_data_items = shared_items|selectattr('share.data_type', 'equalto', 'dietary_data')|list %}
+                        
+                        {% if dietary_data_items %}
+                            {% for item in dietary_data_items %}
+                                <div class="card bg-dark shadow-sm mb-4">
+                                    <div class="card-header bg-success bg-opacity-75">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4 class="card-title mb-0">Dietary Data for {{ item.data.date.strftime('%B %d, %Y') }}</h4>
+                                            <span class="badge bg-secondary">Shared by: {{ item.owner.username }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <div class="row mb-3">
+                                            <div class="col-md-3">
+                                                <div class="card bg-dark bg-opacity-50 text-center p-3">
+                                                    <h3>{{ item.data.calories }}</h3>
+                                                    <p class="mb-0">Calories</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-dark bg-opacity-50 text-center p-3">
+                                                    <h3>{{ item.data.protein }}g</h3>
+                                                    <p class="mb-0">Protein</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-dark bg-opacity-50 text-center p-3">
+                                                    <h3>{{ item.data.carbs }}g</h3>
+                                                    <p class="mb-0">Carbs</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-dark bg-opacity-50 text-center p-3">
+                                                    <h3>{{ item.data.fat }}g</h3>
+                                                    <p class="mb-0">Fat</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if item.data.notes %}
+                                            <div class="alert alert-info">
+                                                <h5 class="alert-heading">Notes</h5>
+                                                <p class="mb-0">{{ item.data.notes }}</p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="text-muted mt-2">
+                                            <small>Shared on: {{ item.share.share_date.strftime('%Y-%m-%d') }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No dietary data has been shared with you yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="card bg-dark shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-users fa-5x text-muted"></i>
+                        </div>
+                        <h3 class="mb-3">No Data Shared With You Yet</h3>
+                        <p class="mb-4">When other users share their meal plans or dietary data with you, they'll appear here.</p>
+                        <a href="{{ url_for('routes.share_data') }}" class="btn btn-primary">
+                            <i class="fas fa-share-alt me-2"></i> Share Your Data with Others
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('routes.visualize_data') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-line me-2"></i> View Your Analytics
+                </a>
+                
+                <a href="{{ url_for('routes.share_data') }}" class="btn btn-primary">
+                    <i class="fas fa-share-alt me-2"></i> Share Your Data
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
