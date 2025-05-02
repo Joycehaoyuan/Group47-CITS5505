@@ -1,13 +1,64 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - NutriPlanner{% endblock %}
+{% block title %}NutriMate - Your Personal Meal Planning Assistant{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Welcome to NutriPlanner!</h1>
-    <p>Choose what you want to do:</p>
-    <a href="{{ url_for('routes.upload_data') }}" class="btn btn-primary m-2">Upload Data</a>
-    <a href="{{ url_for('routes.visualize_data') }}" class="btn btn-success m-2">Visualize Data</a>
-    <a href="{{ url_for('routes.meal_plan') }}" class="btn btn-warning m-2">Meal Plan</a>
-</div>
+<!-- Hero Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="fw-bold mb-4">Welcome to NutriMate</h1>
+                <p class="lead mb-4" style="font-size: 1.35rem; font-weight: 400; line-height: 1.6;">
+                    With NutriMate, you can effortlessly keep track of your meals and enjoy a seamless experience that helps you stay organized and reduce food waste. Whether you're a busy professional, a home cook, or someone who loves to experiment in the kitchen, NutriMate is here to support your culinary adventures.
+                </p>
+                <a href="/meal-plan" class="btn btn-primary btn-lg me-2">Create Meal Plan</a>
+                <a href="/visualize-data" class="btn btn-outline-primary btn-lg">View Analytics</a>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='images/hero-image.svg') }}" alt="Meal Planning Illustration" class="img-fluid rounded-circle hero-image" onerror="this.src='https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=600&h=600'; this.onerror=null;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About, How It Works, and Benefits Sections remain unchanged -->
+
+<!-- How It Works Section CTA Buttons -->
+<section class="container my-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h2 class="mb-4">Generate Your Personalized Meal Plan</h2>
+            <p class="lead">Creating a meal plan tailored to your needs is simple with NutriMate:</p>
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i> Choose from 6 dietary preferences</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i> Set your daily calorie target</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i> Select number of meals per day</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i> Get instant recommendations</li>
+                <li class="list-group-item bg-transparent"><i class="fas fa-check-circle text-success me-2"></i> Refresh meals if needed</li>
+            </ul>
+            <a href="/register" class="btn btn-primary">Sign Up to Get Started</a>
+        </div>
+        <div class="col-md-6">
+            <img src="https://images.unsplash.com/photo-1493770348161-369560ae357d" alt="Healthy meal planning" class="img-fluid rounded-3 shadow">
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="container my-5">
+    <div class="card border-0 rounded-4 shadow">
+        <div class="card-body p-5 text-center">
+            <h2 class="mb-4">Ready to Transform Your Meal Planning?</h2>
+            <p class="lead mb-4">Join thousands of users who are simplifying their nutrition with NutriMate.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/meal-plan" class="btn btn-primary btn-lg px-4">Create Your Meal Plan</a>
+                <a href="/upload-data" class="btn btn-outline-primary btn-lg px-4">Upload Your Data</a>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
+
