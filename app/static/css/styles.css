@@ -19,3 +19,7 @@ body {
 .btn:hover {
     background-color: #6ca32c;
 }
+
+.dietary-data-container {
+    display: none;
+}
