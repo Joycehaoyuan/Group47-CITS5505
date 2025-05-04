@@ -14,6 +14,17 @@ class MealPlan(db.Model):
     target_calories = db.Column(db.Integer, nullable=False)
     meal_count = db.Column(db.Integer, nullable=False)
     meals = db.Column(db.Text, nullable=False)  # JSON serialized meal data
+
+class SharedData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    data_type = db.Column(db.String(20), nullable=False)  # 'meal_plan' or 'dietary_data'
+    data_id = db.Column(db.Integer, nullable=False)
+    share_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<SharedData {self.data_type} from {self.owner_id} to {self.recipient_id}>'
     
     def get_meals(self):
         return json.loads(self.meals)
