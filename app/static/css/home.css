@@ -1,0 +1,71 @@
+/* Styles specific to the home page */
+
+/* Hero Section */
+.hero-section {
+    color: var(--text-dark);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.hero-text {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Hero image */
+.hero-image {
+    max-width: 80%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 5px solid white;
+    border-radius: 50%;
+}
+
+/* Feature cards on homepage */
+.feature-card {
+    height: 100%;
+    border-radius: 10px;
+    transition: transform 0.2s;
+    border: 1px solid var(--border-color);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+}
+
+/* About section cards */
+.card.border-0 {
+    transition: all 0.3s ease;
+}
+
+.card.border-0:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Benefits section */
+.benefits-section .card {
+    transition: transform 0.3s;
+}
+
+.benefits-section .card:hover {
+    transform: translateY(-5px);
+}
+
+/* CTA section */
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+/* Feature icons */
+.feather {
+    stroke: var(--primary-color);
+    width: 24px;
+    height: 24px;
+    margin-right: 0.5rem;
+}
