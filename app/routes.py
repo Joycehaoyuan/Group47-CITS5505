@@ -81,7 +81,49 @@ def meal_plan():
 @bp.route('/upload-data', methods=['GET', 'POST'])
 @login_required
 def upload_data():
-    return render_template('upload_data.html')
+    """Page to manually upload dietary data."""
+    form = UploadDietaryDataForm()
+    csv_form = UploadCSVForm()  # not completely implemented yet
+
+    if form.validate_on_submit():
+        try:
+            meals_data = json.loads(form.meals_json.data) if form.meals_json.data else []
+            date_obj = datetime.strptime(form.date.data, '%Y-%m-%d').date()
+            
+            existing_entry = UserDietaryData.query.filter_by(
+                user_id=current_user.id,
+                date=date_obj
+            ).first()
+            
+            if existing_entry:
+                existing_entry.calories = form.calories.data
+                existing_entry.protein = form.protein.data
+                existing_entry.carbs = form.carbs.data
+                existing_entry.fat = form.fat.data
+                existing_entry.notes = form.notes.data
+                existing_entry.meals_json = json.dumps(meals_data)
+                flash('Dietary data updated for this date.', 'success')
+            else:
+                new_entry = UserDietaryData(
+                    user_id=current_user.id,
+                    date=date_obj,
+                    calories=form.calories.data,
+                    protein=form.protein.data,
+                    carbs=form.carbs.data,
+                    fat=form.fat.data,
+                    notes=form.notes.data,
+                    meals_json=json.dumps(meals_data)
+                )
+                db.session.add(new_entry)
+                flash('Dietary data saved successfully!', 'success')
+                
+            db.session.commit()
+            return redirect(url_for('routes.visualize_data'))
+            
+        except Exception as e:
+            flash(f'Error saving data: {str(e)}', 'danger')
+
+    return render_template('upload_data.html', form=form, csv_form=csv_form)
 
 @bp.route('/visualize-data')
 def visualize_data():
