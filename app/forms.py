@@ -5,6 +5,7 @@ from flask_wtf.file import FileAllowed
 from models import User
 
 
+<<<<<<< HEAD
 
 
 
@@ -39,3 +40,15 @@ class UploadCSVForm(FlaskForm):
         FileAllowed(['csv'], 'CSV files only!')
     ])
     submit = SubmitField('Upload File')
+=======
+class ShareDataForm(FlaskForm):
+    recipient_username = StringField('Username to share with', validators=[DataRequired()])
+    data_type = SelectField('Data Type', choices=[('meal_plan', 'Meal Plan'), ('dietary_data', 'Dietary Data')])
+    data_id = IntegerField('Data ID', validators=[DataRequired()])
+    submit = SubmitField('Share')
+    
+    def validate_recipient_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if not user:
+            raise ValidationError('User not found. Please check the username.')
+>>>>>>> f4e681942efbfb6ef97f0b8abe540bf63b3d6e84
