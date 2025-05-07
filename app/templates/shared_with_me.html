@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Shared With Me - NutriPlanner{% endblock %}
+{% block title %}Shared Data - NutriMate{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -62,7 +62,8 @@
                                                                 <span class="badge bg-light text-dark">{{ meal.total_calories }} calories</span>
                                                             </div>
                                                         </div>
-                                                        <ul class="list-group list-group-flush">{% for food in meal.foods %}
+                                                        <ul class="list-group list-group-flush">
+                                                            {% for food in meal.foods %}
                                                                 <li class="list-group-item bg-transparent">
                                                                     <div class="d-flex justify-content-between align-items-center">
                                                                         <div>
