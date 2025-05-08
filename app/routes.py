@@ -17,10 +17,10 @@ bp = Blueprint('routes', __name__)
 @bp.route('/')
 def index():
     return render_template('index.html')
-
+    
 @bp.route('/meal-plan')
 def meal_plan():
-     """API endpoint to refresh an individual meal."""
+    """API endpoint to refresh an individual meal."""
     data = request.json
     meal_plan_id = data.get('meal_plan_id')
     meal_index = data.get('meal_index')
