@@ -46,6 +46,29 @@ class UserDietaryData(db.Model):
 
 # Relationships
 meal_plans = db.relationship('MealPlan', backref='user', lazy=True)
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    date_joined = db.Column(db.DateTime, default=datetime.utcnow)
+    
+
+    # Relationships
+    meal_plans = db.relationship('MealPlan', backref='user', lazy=True)
+    dietary_data = db.relationship('UserDietaryData', backref='user', lazy=True)
+    shared_by_me = db.relationship('SharedData', 
+                                    foreign_keys='SharedData.owner_id',
+                                    backref='owner', 
+                                    lazy=True)
+    shared_with_me = db.relationship('SharedData', 
+                                        foreign_keys='SharedData.recipient_id',
+                                        backref='recipient', 
+                                        lazy=True)
+
+    def __repr__(self):
+            return f'<User {self.username}>'
+
 class MealPlan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
