@@ -222,9 +222,7 @@
                     {% endfor %}
                 </ul>
                 <div class="text-end p-2">
-                    <button type="button" class="btn btn-sm btn-outline-success recipe-suggestion-btn"
-                        data-meal-name="{{ meal.name }}"
-                        data-foods="{% for food in meal.foods %}{{ food.name }}{% if not loop.last %},{% endif %}{% endfor %}">
+                    <button type="button" class="btn btn-sm btn-outline-success recipe-suggestion-btn" data-meal-name="{{ meal.name }}" data-foods="{% for food in meal.foods %}{{ food.name }}{% if not loop.last %},{% endif %}{% endfor %}">
                         <i class="fas fa-utensils me-1"></i> Recipe Suggestions
                     </button>
                 </div>
