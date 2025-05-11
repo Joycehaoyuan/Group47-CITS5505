@@ -11,6 +11,12 @@ import os
 from app import db
 from models import User, Food, MealPlan, UserDietaryData, SharedData, Recipe, RecipeIngredient
 from forms import LoginForm, RegistrationForm, MealPlanForm, UploadDietaryDataForm, UploadCSVForm, ShareDataForm
+from app import db
+from models import User, Food, MealPlan, UserDietaryData, SharedData, Recipe, RecipeIngredient
+from forms import LoginForm, RegistrationForm, MealPlanForm, UploadDietaryDataForm, UploadCSVForm, ShareDataForm
+from utils import generate_meal_plan, recommend_macros, get_food_by_diet, generate_single_meal
+from recipe_api import get_recipes_by_ingredients, search_recipes, format_recipe_for_display
+from flask_wtf.csrf import CSRFError
 
 
 bp = Blueprint('routes', __name__)
@@ -69,8 +75,67 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('routes.index'))
 
-@bp.route('/meal-plan')
+@bp.route('/meal-plan', methods=['GET', 'POST'])
 def meal_plan():
+    """Meal plan generation page."""
+    form = MealPlanForm()
+    
+    if form.validate_on_submit():
+        meal_plan_data = generate_meal_plan(
+            form.diet_type.data,
+            form.target_calories.data,
+            form.meal_count.data
+        )
+        
+        # If user is logged in, save the meal plan
+        if current_user.is_authenticated:
+            meal_plan = MealPlan(
+                user_id=current_user.id,
+                diet_type=form.diet_type.data,
+                target_calories=form.target_calories.data,
+                meal_count=form.meal_count.data,
+                meals=json.dumps(meal_plan_data)
+            )
+            
+            db.session.add(meal_plan)
+            db.session.commit()
+            
+            return render_template('meal_plan.html', 
+                                form=form, 
+                                meal_plan=meal_plan,
+                                meal_data=meal_plan_data,
+                                macros=recommend_macros(form.target_calories.data))
+        else:
+            # For non-logged in users, just show the meal plan without saving
+            return render_template('meal_plan.html', 
+                                form=form, 
+                                meal_plan=None,  # No saved plan for anonymous users
+                                meal_data=meal_plan_data,
+                                macros=recommend_macros(form.target_calories.data),
+                                login_required_for_save=True)  # Flag to show login prompt
+    
+    # If user is logged in, show previous meal plan if available
+    if current_user.is_authenticated:
+        latest_meal_plan = MealPlan.query.filter_by(user_id=current_user.id).order_by(MealPlan.date_created.desc()).first()
+        
+        if latest_meal_plan and not form.is_submitted():
+            form.diet_type.data = latest_meal_plan.diet_type
+            form.target_calories.data = latest_meal_plan.target_calories
+            form.meal_count.data = latest_meal_plan.meal_count
+            
+            return render_template('meal_plan.html', 
+                                form=form, 
+                                meal_plan=latest_meal_plan,
+                                meal_data=latest_meal_plan.get_meals(),
+                                macros=recommend_macros(latest_meal_plan.target_calories))
+    
+    # Default recommended macros
+    default_calories = 2000
+    return render_template('meal_plan.html', 
+                        form=form, 
+                        meal_plan=None,
+                        meal_data=None,
+                        macros=recommend_macros(default_calories))
      """API endpoint to refresh an individual meal."""
     data = request.json
     meal_plan_id = data.get('meal_plan_id')
