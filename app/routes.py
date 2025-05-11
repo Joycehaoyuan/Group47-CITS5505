@@ -257,7 +257,97 @@ def upload_csv():
 
 @bp.route('/visualize-data')
 def visualize_data():
-    return render_template('visualize_data.html')
+    """Data visualization page."""
+    # Check if user is logged in
+    if current_user.is_authenticated:
+        # Get user's actual data
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=30)  # Show last 30 days of data
+        
+        dietary_data = UserDietaryData.query.filter(
+            UserDietaryData.user_id == current_user.id,
+            UserDietaryData.date >= start_date,
+            UserDietaryData.date <= end_date
+        ).order_by(UserDietaryData.date).all()
+        
+        # Calculate some statistics for the user
+        stats = {
+            'entries_count': len(dietary_data),
+            'avg_calories': round(sum(d.calories for d in dietary_data) / len(dietary_data)) if dietary_data else 0,
+            'avg_protein': round(sum(d.protein for d in dietary_data) / len(dietary_data), 1) if dietary_data else 0,
+            'avg_carbs': round(sum(d.carbs for d in dietary_data) / len(dietary_data), 1) if dietary_data else 0,
+            'avg_fat': round(sum(d.fat for d in dietary_data) / len(dietary_data), 1) if dietary_data else 0,
+        }
+        
+        # Get latest meal plan for comparison
+        latest_meal_plan = MealPlan.query.filter_by(user_id=current_user.id).order_by(MealPlan.date_created.desc()).first()
+        
+        # Generate chart data
+        chart_data = {
+            'dates': [d.date.strftime('%Y-%m-%d') for d in dietary_data],
+            'calories': [d.calories for d in dietary_data],
+            'protein': [d.protein for d in dietary_data],
+            'carbs': [d.carbs for d in dietary_data],
+            'fat': [d.fat for d in dietary_data],
+        }
+        
+        # Check if user has shared data to view
+        shared_with_me = SharedData.query.filter_by(recipient_id=current_user.id).all()
+        has_shared_data = len(shared_with_me) > 0
+        
+        return render_template(
+            'visualize_data.html',
+            dietary_data=dietary_data,
+            stats=stats,
+            chart_data=json.dumps(chart_data),
+            meal_plan=latest_meal_plan,
+            has_shared_data=has_shared_data
+        )
+    else:
+        # For non-logged in users, show example data
+        # Create sample data for demonstration
+        today = datetime.now().date()
+        sample_dates = [(today - timedelta(days=i)) for i in range(7)]
+        
+        # Example dietary data
+        sample_dietary_data = [
+            {'date': sample_dates[0], 'calories': 2100, 'protein': 110, 'carbs': 210, 'fat': 70},
+            {'date': sample_dates[1], 'calories': 1950, 'protein': 100, 'carbs': 200, 'fat': 65},
+            {'date': sample_dates[2], 'calories': 2050, 'protein': 105, 'carbs': 205, 'fat': 68},
+            {'date': sample_dates[3], 'calories': 2000, 'protein': 102, 'carbs': 202, 'fat': 66},
+            {'date': sample_dates[4], 'calories': 2150, 'protein': 112, 'carbs': 215, 'fat': 72},
+            {'date': sample_dates[5], 'calories': 1900, 'protein': 95, 'carbs': 190, 'fat': 63},
+            {'date': sample_dates[6], 'calories': 2200, 'protein': 115, 'carbs': 220, 'fat': 73},
+        ]
+        
+        # Calculate sample statistics
+        sample_stats = {
+            'entries_count': len(sample_dietary_data),
+            'avg_calories': round(sum(d['calories'] for d in sample_dietary_data) / len(sample_dietary_data)),
+            'avg_protein': round(sum(d['protein'] for d in sample_dietary_data) / len(sample_dietary_data), 1),
+            'avg_carbs': round(sum(d['carbs'] for d in sample_dietary_data) / len(sample_dietary_data), 1),
+            'avg_fat': round(sum(d['fat'] for d in sample_dietary_data) / len(sample_dietary_data), 1),
+        }
+        
+        # Sample chart data
+        sample_chart_data = {
+            'dates': [d.strftime('%Y-%m-%d') for d in sample_dates],
+            'calories': [d['calories'] for d in sample_dietary_data],
+            'protein': [d['protein'] for d in sample_dietary_data],
+            'carbs': [d['carbs'] for d in sample_dietary_data],
+            'fat': [d['fat'] for d in sample_dietary_data],
+        }
+        
+        return render_template(
+            'visualize_data.html',
+            dietary_data=[],  # No actual data for display in tables
+            stats=sample_stats,
+            chart_data=json.dumps(sample_chart_data),
+            meal_plan=None,
+            has_shared_data=False,
+            login_required_for_real_data=True  # Flag to show login prompt
+        )
+
 
 @bp.route('/share-data', methods=['GET', 'POST'])
 @login_required
