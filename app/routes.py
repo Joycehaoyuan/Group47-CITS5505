@@ -129,10 +129,66 @@ def meal_plan():
     
     return jsonify({'success': True, 'meal': new_meal})
 
-@bp.route('/upload-data', methods=['GET', 'POST'])
+@bp.route('/upload/manual', methods=['GET', 'POST'])
 @login_required
-def upload_data():
-    return render_template('upload_data.html')
+def upload_dietary_data():
+    form = UploadDietaryDataForm()
+    if form.validate_on_submit():
+        dietary_data = UserDietaryData(
+            user_id=current_user.id,
+            date=datetime.strptime(form.date.data, '%Y-%m-%d'),
+            calories=form.calories.data,
+            protein=form.protein.data,
+            carbs=form.carbs.data,
+            fat=form.fat.data,
+            notes=form.notes.data,
+        )
+        # deal with meals_json data
+        if form.meals_json.data:
+            dietary_data.set_meals(json.loads(form.meals_json.data))
+        else:
+            dietary_data.set_meals([])
+
+        db.session.add(dietary_data)
+        db.session.commit()
+        flash('Dietary data uploaded successfully.')
+        return redirect(url_for('routes.upload_dietary_data'))
+
+    return render_template('upload_manual.html', form=form)
+
+@bp.route('/upload/csv', methods=['GET', 'POST'])
+@login_required
+def upload_csv():
+    form = UploadCSVForm()
+    if form.validate_on_submit():
+        file = form.csv_file.data
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        reader = csv.DictReader(stream)
+
+        for row in reader:
+            try:
+                dietary_data = UserDietaryData(
+                    user_id=current_user.id,
+                    date=datetime.strptime(row['date'], '%Y-%m-%d'),
+                    calories=int(row['calories']),
+                    protein=float(row['protein']),
+                    carbs=float(row['carbs']),
+                    fat=float(row['fat']),
+                    notes=row.get('notes', '')
+                )
+                meals_data = json.loads(row.get('meals_json', '[]'))
+                dietary_data.set_meals(meals_data)
+
+                db.session.add(dietary_data)
+            except Exception as e:
+                flash(f"Error processing row: {row}. Error: {e}", 'danger')
+
+        db.session.commit()
+        flash('CSV file uploaded successfully.')
+        return redirect(url_for('routes.upload_csv'))
+
+    return render_template('upload_csv.html', form=form)
+
 
 @bp.route('/visualize-data')
 def visualize_data():
