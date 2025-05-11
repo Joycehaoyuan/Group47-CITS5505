@@ -2,6 +2,7 @@
 <html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NutriMate - Meal Planning Made Easy{% endblock %}</title>
     
@@ -42,7 +43,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('routes.index') }}">Home</a>
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('routes.index') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
                     </li>
                 
                     {% if current_user.is_authenticated %}
@@ -54,10 +57,15 @@
                     {% endif %}
                 
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/meal-plan' %}active{% endif %}" href="{{ url_for('routes.meal_plan') }}">Meal Plan</a>
+                        <a class="nav-link {% if request.path == '/meal-plan' %}active{% endif %}" href="{{ url_for('routes.meal_plan') }}">
+                            <i class="fas fa-utensils me-1"></i> Meal Plan
+                        </a>
                     </li>
+                
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/visualize-data' %}active{% endif %}" href="{{ url_for('routes.visualize_data') }}">Analytics</a>
+                        <a class="nav-link {% if request.path == '/visualize-data' %}active{% endif %}" href="{{ url_for('routes.visualize_data') }}">
+                            <i class="fas fa-chart-line me-1"></i> Analytics
+                        </a>
                     </li>
                 
                     {% if current_user.is_authenticated %}
@@ -71,21 +79,25 @@
                                 <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('routes.profile') }}">Profile</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('routes.shared_with_me') }}">Shared with Me</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('routes.profile') }}"><i class="fas fa-id-badge me-2"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('routes.shared_with_me') }}"><i class="fas fa-users me-2"></i> Shared with Me</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('routes.logout') }}">Logout</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('routes.logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('routes.login') }}">Login</a>
+                            <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('routes.login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="{{ url_for('routes.register') }}">Register</a>
+                            <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="{{ url_for('routes.register') }}">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </a>
                         </li>
                     {% endif %}
-                </ul>
+                </ul>                           
             </div>
         </div>
     </nav>
