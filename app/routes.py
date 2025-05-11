@@ -129,66 +129,118 @@ def meal_plan():
     
     return jsonify({'success': True, 'meal': new_meal})
 
-@bp.route('/upload/manual', methods=['GET', 'POST'])
+@bp.route('/upload-data', methods=['GET', 'POST'])
 @login_required
-def upload_dietary_data():
+def upload_data():
+    """Page to manually upload dietary data."""
     form = UploadDietaryDataForm()
+    csv_form = UploadCSVForm()
+    
     if form.validate_on_submit():
-        dietary_data = UserDietaryData(
-            user_id=current_user.id,
-            date=datetime.strptime(form.date.data, '%Y-%m-%d'),
-            calories=form.calories.data,
-            protein=form.protein.data,
-            carbs=form.carbs.data,
-            fat=form.fat.data,
-            notes=form.notes.data,
-        )
-        # deal with meals_json data
-        if form.meals_json.data:
-            dietary_data.set_meals(json.loads(form.meals_json.data))
-        else:
-            dietary_data.set_meals([])
-
-        db.session.add(dietary_data)
-        db.session.commit()
-        flash('Dietary data uploaded successfully.')
-        return redirect(url_for('routes.upload_dietary_data'))
-
-    return render_template('upload_manual.html', form=form)
-
-@bp.route('/upload/csv', methods=['GET', 'POST'])
-@login_required
-def upload_csv():
-    form = UploadCSVForm()
-    if form.validate_on_submit():
-        file = form.csv_file.data
-        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
-        reader = csv.DictReader(stream)
-
-        for row in reader:
-            try:
-                dietary_data = UserDietaryData(
+        try:
+            meals_data = json.loads(form.meals_json.data) if form.meals_json.data else []
+            date_obj = datetime.strptime(form.date.data, '%Y-%m-%d').date()
+            
+            # Check if entry for this date already exists
+            existing_entry = UserDietaryData.query.filter_by(
+                user_id=current_user.id,
+                date=date_obj
+            ).first()
+            
+            if existing_entry:
+                existing_entry.calories = form.calories.data
+                existing_entry.protein = form.protein.data
+                existing_entry.carbs = form.carbs.data
+                existing_entry.fat = form.fat.data
+                existing_entry.notes = form.notes.data
+                existing_entry.meals_json = json.dumps(meals_data)
+                flash('Dietary data updated for this date.', 'success')
+            else:
+                new_entry = UserDietaryData(
                     user_id=current_user.id,
-                    date=datetime.strptime(row['date'], '%Y-%m-%d'),
-                    calories=int(row['calories']),
-                    protein=float(row['protein']),
-                    carbs=float(row['carbs']),
-                    fat=float(row['fat']),
-                    notes=row.get('notes', '')
+                    date=date_obj,
+                    calories=form.calories.data,
+                    protein=form.protein.data,
+                    carbs=form.carbs.data,
+                    fat=form.fat.data,
+                    notes=form.notes.data,
+                    meals_json=json.dumps(meals_data)
                 )
-                meals_data = json.loads(row.get('meals_json', '[]'))
-                dietary_data.set_meals(meals_data)
-
-                db.session.add(dietary_data)
-            except Exception as e:
-                flash(f"Error processing row: {row}. Error: {e}", 'danger')
-
-        db.session.commit()
-        flash('CSV file uploaded successfully.')
-        return redirect(url_for('routes.upload_csv'))
-
-    return render_template('upload_csv.html', form=form)
-
+                db.session.add(new_entry)
+                flash('Dietary data saved successfully!', 'success')
+                
+            db.session.commit()
+            return redirect(url_for('routes.visualize_data'))
+            
+        except Exception as e:
+            flash(f'Error saving data: {str(e)}', 'danger')
+    
+    if csv_form.validate_on_submit():
+        try:
+            csv_file = csv_form.csv_file.data
+            stream = io.StringIO(csv_file.stream.read().decode("UTF8"), newline=None)
+            csv_reader = csv.DictReader(stream)
+            
+            # Validate CSV format
+            required_fields = ['date', 'calories', 'protein', 'carbs', 'fat']
+            first_row = next(csv_reader)
+            stream.seek(0)  # Reset stream position
+            next(csv_reader)  # Skip header row again
+            
+            for field in required_fields:
+                if field not in first_row:
+                    flash(f'CSV file missing required column: {field}', 'danger')
+                    return redirect(url_for('routes.upload_data'))
+            
+            # Process CSV data
+            entries_added = 0
+            for row in csv_reader:
+                try:
+                    date_obj = datetime.strptime(row['date'], '%Y-%m-%d').date()
+                    
+                    # Check if entry already exists
+                    existing = UserDietaryData.query.filter_by(
+                        user_id=current_user.id,
+                        date=date_obj
+                    ).first()
+                    
+                    if existing:
+                        # Update existing entry
+                        existing.calories = int(row['calories'])
+                        existing.protein = float(row['protein'])
+                        existing.carbs = float(row['carbs'])
+                        existing.fat = float(row['fat'])
+                        existing.notes = row.get('notes', '')
+                        if 'meals' in row:
+                            existing.meals_json = row['meals']
+                    else:
+                        # Create new entry
+                        meals_json = row.get('meals', '[]')
+                        entry = UserDietaryData(
+                            user_id=current_user.id,
+                            date=date_obj,
+                            calories=int(row['calories']),
+                            protein=float(row['protein']),
+                            carbs=float(row['carbs']),
+                            fat=float(row['fat']),
+                            notes=row.get('notes', ''),
+                            meals_json=meals_json
+                        )
+                        db.session.add(entry)
+                        entries_added += 1
+                        
+                except Exception as e:
+                    flash(f'Error processing row: {row.get("date", "unknown")}: {str(e)}', 'warning')
+                    continue
+                    
+            db.session.commit()
+            flash(f'Successfully imported {entries_added} dietary data entries!', 'success')
+            return redirect(url_for('routes.visualize_data'))
+            
+        except Exception as e:
+            flash(f'Error processing CSV file: {str(e)}', 'danger')
+    
+    return render_template('upload_data.html', form=form, csv_form=csv_form)
 
 @bp.route('/visualize-data')
 def visualize_data():
