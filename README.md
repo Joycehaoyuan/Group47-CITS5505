@@ -1,8 +1,8 @@
 # Agile Web Development - CITS5505 Group Project
 
-## 📝⏱️ NutriPlanner Overview
+## 📝⏱️ NutriMate Overview
 
-Struggling with meal planning and nutrition tracking? Want to eat healthier without all the hassle? NutriPlanner is here to help! 💪
+Struggling with meal planning and nutrition tracking? Want to eat healthier without all the hassle? NutriMate is here to help! 💪
 
 Our project **NutriMate** is a web application designed to help users generate personalized meal plans, track their nutritional intake, visualize their progress, and share their data with friends or health professionals.
 
