@@ -11,6 +11,8 @@ import os
 from app import db
 from models import User, Food, MealPlan, UserDietaryData, SharedData, Recipe, RecipeIngredient
 from forms import LoginForm, RegistrationForm, MealPlanForm, UploadDietaryDataForm, UploadCSVForm, ShareDataForm
+from utils import generate_meal_plan, recommend_macros, get_food_by_diet, generate_single_meal
+from recipe_api import get_recipes_by_ingredients, search_recipes, format_recipe_for_display
 
 
 bp = Blueprint('routes', __name__)
