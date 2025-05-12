@@ -1,5 +1,5 @@
 from app import db
-from models import Food
+from app.models import Food
 import random
 import math
 from datetime import datetime, timedelta
