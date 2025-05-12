@@ -8,11 +8,10 @@ import json
 from datetime import datetime, timedelta
 import os
 
-from app import db
+from __init__ import db
 from models import User, Food, MealPlan, UserDietaryData, SharedData, Recipe, RecipeIngredient
 from forms import LoginForm, RegistrationForm, MealPlanForm, UploadDietaryDataForm, UploadCSVForm, ShareDataForm
 from utils import generate_meal_plan, recommend_macros, get_food_by_diet, generate_single_meal
-from recipe_api import get_recipes_by_ingredients, search_recipes, format_recipe_for_display
 
 
 bp = Blueprint('routes', __name__)
@@ -71,13 +70,100 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('routes.index'))
 
-@bp.route('/meal-plan')
+@bp.route('/meal-plan', methods=['GET', 'POST'])
 def meal_plan():
-     """API endpoint to refresh an individual meal."""
+    """Meal plan generation page."""
+    form = MealPlanForm()
+    
+    if form.validate_on_submit():
+        meal_plan_data = generate_meal_plan(
+            form.diet_type.data,
+            form.target_calories.data,
+            form.meal_count.data
+        )
+        
+        # If user is logged in, save the meal plan
+        if current_user.is_authenticated:
+            meal_plan = MealPlan(
+                user_id=current_user.id,
+                diet_type=form.diet_type.data,
+                target_calories=form.target_calories.data,
+                meal_count=form.meal_count.data,
+                meals=json.dumps(meal_plan_data)
+            )
+            
+            db.session.add(meal_plan)
+            db.session.commit()
+            
+            return render_template('meal_plan.html', 
+                                form=form, 
+                                meal_plan=meal_plan,
+                                meal_data=meal_plan_data,
+                                macros=recommend_macros(form.target_calories.data))
+        else:
+            # For non-logged in users, just show the meal plan without saving
+            return render_template('meal_plan.html', 
+                                form=form, 
+                                meal_plan=None,  # No saved plan for anonymous users
+                                meal_data=meal_plan_data,
+                                macros=recommend_macros(form.target_calories.data),
+                                login_required_for_save=True)  # Flag to show login prompt
+    
+    # If user is logged in, show previous meal plan if available
+    if current_user.is_authenticated:
+        latest_meal_plan = MealPlan.query.filter_by(user_id=current_user.id).order_by(MealPlan.date_created.desc()).first()
+        
+        if latest_meal_plan and not form.is_submitted():
+            form.diet_type.data = latest_meal_plan.diet_type
+            form.target_calories.data = latest_meal_plan.target_calories
+            form.meal_count.data = latest_meal_plan.meal_count
+            
+            return render_template('meal_plan.html', 
+                                form=form, 
+                                meal_plan=latest_meal_plan,
+                                meal_data=latest_meal_plan.get_meals(),
+                                macros=recommend_macros(latest_meal_plan.target_calories))
+    
+    # Default recommended macros
+    default_calories = 2000
+    return render_template('meal_plan.html', 
+                        form=form, 
+                        meal_plan=None,
+                        meal_data=None,
+                        macros=recommend_macros(default_calories))
+
+    
+    # Default recommended macros
+    default_calories = 2000
+    return render_template('meal_plan.html', 
+                        form=form, 
+                        meal_plan=None,
+                        meal_data=None,
+                        macros=recommend_macros(default_calories))
+    
+@bp.route('/api/users', methods=['GET'])
+@login_required
+def api_users():
+    # Implement user search functionality
+    term = request.args.get('term', '')
+    users = User.query.filter(User.username.like(f'%{term}%')).all()
+    return jsonify({"users": [user.username for user in users]})
+
+@bp.route('/api/preview-data', methods=['POST'])
+@login_required
+def preview_data():
+    # Implement data preview functionality
+    data = request.json
+    # Process data and return preview
+    return jsonify({"preview": "Data processed successfully"})
+
+@bp.route('/api/refresh-meal', methods=['POST'])
+@login_required
+def refresh_meal():
+    """API endpoint to refresh an individual meal."""
     data = request.json
     meal_plan_id = data.get('meal_plan_id')
     meal_index = data.get('meal_index')
-    
     # Convert meal_index to integer
     try:
         meal_index = int(meal_index)
@@ -246,7 +332,97 @@ def upload_data():
 
 @bp.route('/visualize-data')
 def visualize_data():
-    return render_template('visualize_data.html')
+    """Data visualization page."""
+    # Check if user is logged in
+    if current_user.is_authenticated:
+        # Get user's actual data
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=30)  # Show last 30 days of data
+        
+        dietary_data = UserDietaryData.query.filter(
+            UserDietaryData.user_id == current_user.id,
+            UserDietaryData.date >= start_date,
+            UserDietaryData.date <= end_date
+        ).order_by(UserDietaryData.date).all()
+        
+        # Calculate some statistics for the user
+        stats = {
+            'entries_count': len(dietary_data),
+            'avg_calories': round(sum(d.calories for d in dietary_data) / len(dietary_data)) if dietary_data else 0,
+            'avg_protein': round(sum(d.protein for d in dietary_data) / len(dietary_data), 1) if dietary_data else 0,
+            'avg_carbs': round(sum(d.carbs for d in dietary_data) / len(dietary_data), 1) if dietary_data else 0,
+            'avg_fat': round(sum(d.fat for d in dietary_data) / len(dietary_data), 1) if dietary_data else 0,
+        }
+        
+        # Get latest meal plan for comparison
+        latest_meal_plan = MealPlan.query.filter_by(user_id=current_user.id).order_by(MealPlan.date_created.desc()).first()
+        
+        # Generate chart data
+        chart_data = {
+            'dates': [d.date.strftime('%Y-%m-%d') for d in dietary_data],
+            'calories': [d.calories for d in dietary_data],
+            'protein': [d.protein for d in dietary_data],
+            'carbs': [d.carbs for d in dietary_data],
+            'fat': [d.fat for d in dietary_data],
+        }
+        
+        # Check if user has shared data to view
+        shared_with_me = SharedData.query.filter_by(recipient_id=current_user.id).all()
+        has_shared_data = len(shared_with_me) > 0
+        
+        return render_template(
+            'visualize_data.html',
+            dietary_data=dietary_data,
+            stats=stats,
+            chart_data=json.dumps(chart_data),
+            meal_plan=latest_meal_plan,
+            has_shared_data=has_shared_data
+        )
+    else:
+        # For non-logged in users, show example data
+        # Create sample data for demonstration
+        today = datetime.now().date()
+        sample_dates = [(today - timedelta(days=i)) for i in range(7)]
+        
+        # Example dietary data
+        sample_dietary_data = [
+            {'date': sample_dates[0], 'calories': 2100, 'protein': 110, 'carbs': 210, 'fat': 70},
+            {'date': sample_dates[1], 'calories': 1950, 'protein': 100, 'carbs': 200, 'fat': 65},
+            {'date': sample_dates[2], 'calories': 2050, 'protein': 105, 'carbs': 205, 'fat': 68},
+            {'date': sample_dates[3], 'calories': 2000, 'protein': 102, 'carbs': 202, 'fat': 66},
+            {'date': sample_dates[4], 'calories': 2150, 'protein': 112, 'carbs': 215, 'fat': 72},
+            {'date': sample_dates[5], 'calories': 1900, 'protein': 95, 'carbs': 190, 'fat': 63},
+            {'date': sample_dates[6], 'calories': 2200, 'protein': 115, 'carbs': 220, 'fat': 73},
+        ]
+        
+        # Calculate sample statistics
+        sample_stats = {
+            'entries_count': len(sample_dietary_data),
+            'avg_calories': round(sum(d['calories'] for d in sample_dietary_data) / len(sample_dietary_data)),
+            'avg_protein': round(sum(d['protein'] for d in sample_dietary_data) / len(sample_dietary_data), 1),
+            'avg_carbs': round(sum(d['carbs'] for d in sample_dietary_data) / len(sample_dietary_data), 1),
+            'avg_fat': round(sum(d['fat'] for d in sample_dietary_data) / len(sample_dietary_data), 1),
+        }
+        
+        # Sample chart data
+        sample_chart_data = {
+            'dates': [d.strftime('%Y-%m-%d') for d in sample_dates],
+            'calories': [d['calories'] for d in sample_dietary_data],
+            'protein': [d['protein'] for d in sample_dietary_data],
+            'carbs': [d['carbs'] for d in sample_dietary_data],
+            'fat': [d['fat'] for d in sample_dietary_data],
+        }
+        
+        return render_template(
+            'visualize_data.html',
+            dietary_data=[],  # No actual data for display in tables
+            stats=sample_stats,
+            chart_data=json.dumps(sample_chart_data),
+            meal_plan=None,
+            has_shared_data=False,
+            login_required_for_real_data=True  # Flag to show login prompt
+        )
+
 
 @bp.route('/share-data', methods=['GET', 'POST'])
 @login_required
