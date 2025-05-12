@@ -17,7 +17,18 @@
 {% block content %}
 <div class="container my-4">
     <h1 class="mb-4 text-center">Create Your Meal Plan</h1>
-    
+    {% if login_required_for_real_data %}
+    <div class="alert alert-info mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle me-3" style="font-size: 1.2rem;"></i>
+            <div>
+                <span>You haven't uploaded any nutrition data yet. </span>
+                <a href="{{ url_for('routes.upload_data') }}" class="alert-link">Upload your data</a>
+                <span> to see more accurate meal plans.</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     {% if login_required_for_save %}
     <!-- Login Prompt Card for Guests -->
     <div class="card border-primary mb-5">
@@ -153,7 +164,16 @@
                         </div>
                         
                         <div class="d-grid">
-                            {{ form.submit(class="btn btn-primary btn-lg", value="Generate Meal Plan") }}
+                            {% if login_required_for_real_data %}
+                                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                    Upload data first to generate a meal plan
+                                </button>
+                                <small class="text-muted text-center mt-2">
+                                    <a href="{{ url_for('routes.upload_data') }}">Click here to upload your nutrition data</a>
+                                </small>
+                            {% else %}
+                                {{ form.submit(class="btn btn-primary btn-lg", value="Generate Meal Plan") }}
+                            {% endif %}
                         </div>
                     </form>
                 </div>
