@@ -8,18 +8,23 @@ import json
 from datetime import datetime, timedelta
 import os
 
-from __init__ import db
-from models import User, Food, MealPlan, UserDietaryData, SharedData, Recipe, RecipeIngredient
-from forms import LoginForm, RegistrationForm, MealPlanForm, UploadDietaryDataForm, UploadCSVForm, ShareDataForm
-from utils import generate_meal_plan, recommend_macros, get_food_by_diet, generate_single_meal
-
+from app import db
+from app.models import User, Food, MealPlan, UserDietaryData, SharedData, Recipe, RecipeIngredient
+from app.forms import LoginForm, RegistrationForm, MealPlanForm, UploadDietaryDataForm, UploadCSVForm, ShareDataForm
+from app.utils import generate_meal_plan, recommend_macros, get_food_by_diet, generate_single_meal
+from app.recipe_api import get_recipes_by_ingredients, search_recipes, format_recipe_for_display
+from flask_wtf.csrf import CSRFError
 
 bp = Blueprint('routes', __name__)
 
+@bp.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return render_template('csrf_error.html', reason=e.description), 400
+
 @bp.route('/')
 def index():
+    """Landing page with app introduction."""
     return render_template('index.html')
-
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -29,17 +34,21 @@ def register():
         
     form = RegistrationForm()
     if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data)
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password_hash=hashed_password
-        )
-        db.session.add(user)
-        db.session.commit()
-        flash('Your account has been created! You can now log in.', 'success')
-        return redirect(url_for('routes.login'))
-        
+        try:
+            hashed_password = generate_password_hash(form.password.data)
+            user = User(
+                username=form.username.data,
+                email=form.email.data,
+                password_hash=hashed_password
+            )
+            db.session.add(user)
+            db.session.commit()
+            flash('Your account has been created! You can now log in.', 'success')
+            return redirect(url_for('routes.login'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Registration failed: ' + str(e), 'danger')
+            
     return render_template('register.html', form=form)
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -132,15 +141,6 @@ def meal_plan():
                         meal_data=None,
                         macros=recommend_macros(default_calories))
 
-    
-    # Default recommended macros
-    default_calories = 2000
-    return render_template('meal_plan.html', 
-                        form=form, 
-                        meal_plan=None,
-                        meal_data=None,
-                        macros=recommend_macros(default_calories))
-    
 @bp.route('/api/users', methods=['GET'])
 @login_required
 def api_users():
@@ -164,6 +164,7 @@ def refresh_meal():
     data = request.json
     meal_plan_id = data.get('meal_plan_id')
     meal_index = data.get('meal_index')
+    
     # Convert meal_index to integer
     try:
         meal_index = int(meal_index)
@@ -423,7 +424,6 @@ def visualize_data():
             login_required_for_real_data=True  # Flag to show login prompt
         )
 
-
 @bp.route('/share-data', methods=['GET', 'POST'])
 @login_required
 def share_data():
@@ -487,19 +487,34 @@ def share_data():
     # Get existing shares
     my_shares = SharedData.query.filter_by(owner_id=current_user.id).all()
     
+    # Enhance my_shares with recipient info
+    enhanced_my_shares = []
+    for share in my_shares:
+        recipient = User.query.get(share.recipient_id)
+        # Only add if recipient exists
+        if recipient:
+            enhanced_my_shares.append({
+                'share': share,
+                'recipient': recipient
+            })
+    
     # Get data shared with the current user
     shared_data = SharedData.query.filter_by(recipient_id=current_user.id).all()
     
     # Fetch actual data objects for data shared with me
     shared_items = []
     for share in shared_data:
+        owner = User.query.get(share.owner_id)
+        if not owner:
+            continue  # Skip if owner doesn't exist
+            
         if share.data_type == 'meal_plan':
             data_obj = MealPlan.query.get(share.data_id)
             if data_obj:
                 shared_items.append({
                     'share': share,
                     'data': data_obj,
-                    'owner': User.query.get(share.owner_id),
+                    'owner': owner,
                     'meals': data_obj.get_meals()
                 })
         else:  # dietary_data
@@ -508,7 +523,7 @@ def share_data():
                 shared_items.append({
                     'share': share,
                     'data': data_obj,
-                    'owner': User.query.get(share.owner_id)
+                    'owner': owner
                 })
     
     # Get all registered users for autocomplete (excluding current user)
@@ -519,7 +534,7 @@ def share_data():
         form=form,
         meal_plans=meal_plans,
         dietary_data=dietary_data,
-        my_shares=my_shares,
+        my_shares=enhanced_my_shares,
         shared_items=shared_items,
         all_users=all_users
     )
@@ -558,6 +573,199 @@ def delete_share(share_id):
     
     flash('Share has been removed.', 'success')
     return redirect(url_for('routes.share_data'))
-
-
-
+    
+@bp.route('/api/recipe-suggestions', methods=['POST'])
+def recipe_suggestions():
+    """API to get recipe suggestions based on ingredients."""
+    data = request.json
+    foods = data.get('foods', [])
+    meal_name = data.get('meal_name', '')
+    
+    if not foods:
+        return jsonify({'error': 'No foods provided'}), 400
+    
+    # Debug foods received 
+    print(f"Received foods for recipe suggestions: {foods}")
+    
+    # Determine meal type and diet type from meal name
+    meal_type = "any"
+    if "breakfast" in meal_name.lower():
+        meal_type = "breakfast"
+    elif "lunch" in meal_name.lower():
+        meal_type = "lunch"
+    elif "dinner" in meal_name.lower():
+        meal_type = "dinner"
+    elif "snack" in meal_name.lower():
+        meal_type = "snack"
+    
+    # Determine diet type if mentioned in meal name
+    diet_type = None
+    if "vegetarian" in meal_name.lower():
+        diet_type = "vegetarian"
+    elif "vegan" in meal_name.lower():
+        diet_type = "vegan"
+    elif "keto" in meal_name.lower():
+        diet_type = "ketogenic"
+    elif "paleo" in meal_name.lower():
+        diet_type = "paleo"
+    elif "mediterranean" in meal_name.lower():
+        diet_type = "mediterranean"
+        
+    try:
+        # Try to use external API to get recipes
+        api_recipes = []
+        
+        # Method 1: Find recipes by ingredient list
+        ingredient_recipes = get_recipes_by_ingredients(foods, diet_type, limit=3)
+        if ingredient_recipes:
+            for recipe in ingredient_recipes:
+                formatted = format_recipe_for_display(recipe)
+                if formatted:
+                    api_recipes.append({
+                        'name': formatted.get('title', 'Recipe'),
+                        'image': formatted.get('image', ''),
+                        'ingredients': [ing.get('name', '') for ing in formatted.get('extendedIngredients', [])] 
+                                      if 'extendedIngredients' in formatted
+                                      else formatted.get('usedIngredients', []) + formatted.get('missedIngredients', []),
+                        'instructions': formatted.get('instructions', '').split('.') if formatted.get('instructions') else [],
+                        'source_url': formatted.get('sourceUrl', ''),
+                        'ready_in_minutes': formatted.get('readyInMinutes', 0),
+                        'servings': formatted.get('servings', 0)
+                    })
+                    
+        # Method 2: If the first method doesn't find enough recipes, try searching for them
+        if len(api_recipes) < 2:
+            # Join ingredients into a query string    
+            query = " ".join(foods[:3])  # Use the first 3 ingredients as search terms
+            if meal_type != "any":
+                query += f" {meal_type}"  # Add meal type
+                
+            search_results = search_recipes(query, diet_type, limit=3)
+            if search_results:
+                for recipe in search_results:
+                    # Avoid adding duplicate recipes
+                    existing_names = [r.get('name') for r in api_recipes]
+                    if recipe.get('title') not in existing_names:
+                        formatted = format_recipe_for_display(recipe)
+                        if formatted:
+                            api_recipes.append({
+                                'name': formatted.get('title', 'Recipe'),
+                                'image': formatted.get('image', ''),
+                                'ingredients': [ing.get('name', '') for ing in formatted.get('extendedIngredients', [])] 
+                                              if 'extendedIngredients' in formatted
+                                              else [],
+                                'instructions': formatted.get('instructions', '').split('.') if formatted.get('instructions') else [],
+                                'source_url': formatted.get('sourceUrl', ''),
+                                'ready_in_minutes': formatted.get('readyInMinutes', 0),
+                                'servings': formatted.get('servings', 0)
+                            })
+        
+        # Use recipes from external API
+        if api_recipes:
+            return jsonify({
+                'success': True,
+                'meal_name': meal_name,
+                'recipes': api_recipes
+            })
+            
+    except Exception as e:
+        print(f"Error fetching recipes from API: {e}")
+        # If API call fails, we will fall back to local recipes
+        pass
+    
+    # Fallback: If API cannot get recipes, use local static recipes
+    # This ensures that even if the API key is not available or usage quota is exceeded, the application can still work
+    recipes = []
+    foods_lower = [food.lower() for food in foods]
+    
+    # Check if there is egg
+    if any("egg" in food for food in foods_lower):
+        recipes.append({
+            'name': "Simple Scrambled Eggs",
+            'ingredients': [
+                "3 large eggs",
+                "1 tbsp butter or oil",
+                "Salt and pepper to taste",
+                "Optional: chopped herbs, cheese, or vegetables"
+            ],
+            'instructions': [
+                "Beat eggs in a bowl with a pinch of salt and pepper.",
+                "Heat butter or oil in a non-stick pan over medium heat.",
+                "Pour in eggs and cook, stirring gently until they begin to set.",
+                "When eggs are mostly set but still slightly wet, remove from heat (they will continue cooking).",
+                "Add any optional ingredients like herbs or cheese, and serve immediately."
+            ]
+        })
+    
+    # Check if there is sweet potato
+    if any("sweet potato" in food for food in foods_lower):
+        recipes.append({
+            'name': "Roasted Sweet Potato Cubes",
+            'ingredients': [
+                "2 large sweet potatoes, peeled and diced",
+                "2 tbsp olive oil",
+                "1 tsp paprika",
+                "1/2 tsp ground cumin",
+                "Salt and pepper to taste",
+                "Fresh herbs like rosemary or thyme (optional)"
+            ],
+            'instructions': [
+                "Preheat oven to 425°F (220°C).",
+                "Toss sweet potato cubes with olive oil, paprika, cumin, salt, and pepper.",
+                "Spread in a single layer on a baking sheet.",
+                "Roast for 25-30 minutes, turning halfway through, until tender and caramelized.",
+                "Sprinkle with fresh herbs if using and serve hot."
+            ]
+        })
+        
+        # If we have both sweet potato and eggs
+        if any("egg" in food for food in foods_lower):
+            recipes.append({
+                'name': "Sweet Potato and Egg Breakfast Hash",
+                'ingredients': [
+                    "1 large sweet potato, diced small",
+                    "1/2 onion, diced",
+                    "1 bell pepper, diced (optional)",
+                    "2 tbsp olive oil",
+                    "2-4 eggs",
+                    "1/2 tsp paprika",
+                    "Salt and pepper to taste",
+                    "Fresh herbs (parsley, chives, etc.)"
+                ],
+                'instructions': [
+                    "Heat olive oil in a large skillet over medium heat.",
+                    "Add diced sweet potato and cook for 5-7 minutes until starting to soften.",
+                    "Add onion and bell pepper, continue cooking for 5 minutes, stirring occasionally.",
+                    "Season with paprika, salt, and pepper.",
+                    "Create wells in the hash and crack eggs into them.",
+                    "Cover and cook until eggs reach desired doneness (about 3-5 minutes).",
+                    "Garnish with fresh herbs and serve immediately."
+                ]
+            })
+    
+    # If no specific recipe is found, add a generic recipe
+    if not recipes:
+        recipes.append({
+            'name': "Simple Mixed Bowl",
+            'ingredients': [
+                *foods,
+                "Olive oil or butter",
+                "Your favorite seasonings (salt, pepper, herbs)",
+                "Optional: garlic, lemon juice, or vinegar for extra flavor"
+            ],
+            'instructions': [
+                "Prepare all ingredients to appropriate sizes (chop vegetables, cook proteins if needed).",
+                "Heat oil or butter in a large pan over medium heat.",
+                "Add ingredients that take longest to cook first.",
+                "Season with your favorite spices and herbs.",
+                "Continue adding ingredients in order of cooking time.",
+                "Toss everything together until well combined and heated through.",
+                "Adjust seasoning to taste and serve hot."
+            ]
+        })
+    
+    return jsonify({
+        'success': True,
+        'meal_name': meal_name,
+        'recipes': recipes
+    })
