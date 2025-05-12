@@ -9,6 +9,10 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     date_joined = db.Column(db.DateTime, default=datetime.utcnow)
+
+    preferred_diet_type = db.Column(db.String(30), default='Anything')
+    daily_calorie_target = db.Column(db.Integer, default=2000)
+    preferred_meal_count = db.Column(db.Integer, default=3)
     
     # Relationships
     meal_plans = db.relationship('MealPlan', backref='user', lazy=True)
@@ -108,6 +112,12 @@ class Recipe(db.Model):
     calories_per_serving = db.Column(db.Integer, nullable=True)
     servings = db.Column(db.Integer, default=4)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+
+    image_url = db.Column(db.String(500), nullable=True)
+    rating = db.Column(db.Float, default=0.0)
+    rating_count = db.Column(db.Integer, default=0)
+    difficulty = db.Column(db.String(20), default='medium')
+    is_featured = db.Column(db.Boolean, default=False)
     
     def get_ingredients(self):
         return json.loads(self.ingredients)

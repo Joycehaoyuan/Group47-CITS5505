@@ -88,8 +88,8 @@ def add_security_headers(response):
 
 with app.app_context():
     # Import models and routes
-    import models
-    import routes
+    from app import models
+    from app import routes
     
     # Register routes
     app.register_blueprint(routes.bp)
@@ -97,14 +97,14 @@ with app.app_context():
     # Create database tables
     db.create_all()
 
-    from models import User, Food, MealPlan, UserDietaryData, SharedData
+    from app.models import User, Food, MealPlan, UserDietaryData, SharedData
     
     # Ensure the food database has some initial data
     if Food.query.count() == 0:
-        from utils import populate_initial_food_data
+        from app.utils import populate_initial_food_data
         populate_initial_food_data()
 
 @login_manager.user_loader
 def load_user(user_id):
-    from models import User
+    from app.models import User
     return User.query.get(int(user_id))

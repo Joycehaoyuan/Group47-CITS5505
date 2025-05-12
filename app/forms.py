@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FileField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange, Optional
 from flask_wtf.file import FileAllowed
-from models import User
+from app.models import User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -14,7 +14,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FileField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange, Optional, Regexp
 from flask_wtf.file import FileAllowed
-from models import User
+from app.models import User
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[
@@ -56,12 +56,14 @@ class MealPlanForm(FlaskForm):
                                    ('Paleo', 'Paleo'), 
                                    ('Vegan', 'Vegan'), 
                                    ('Vegetarian', 'Vegetarian')])
-    target_calories = IntegerField('Daily Calorie Target', validators=[DataRequired(), NumberRange(min=800, max=5000)])
+    target_calories = IntegerField('Daily Calorie Target', 
+                             validators=[DataRequired(message="Daily calorie target is required."), 
+                                        NumberRange(min=800, max=5000, 
+                                                   message="Daily calories must be between 800 and 5000.")])
     meal_count = SelectField('Number of Meals per Day', 
                             choices=[(3, '3 meals'), (4, '4 meals'), (5, '5 meals'), (6, '6 meals')],
                             coerce=int)
     submit = SubmitField('Generate Meal Plan')
-
 
 class UploadDietaryDataForm(FlaskForm):
     date = StringField('Date (YYYY-MM-DD)', validators=[DataRequired()])
@@ -72,7 +74,6 @@ class UploadDietaryDataForm(FlaskForm):
     notes = TextAreaField('Notes', validators=[Optional()])
     meals_json = HiddenField('Meals Data')
     submit = SubmitField('Save Data')
-
 
 class UploadCSVForm(FlaskForm):
     csv_file = FileField('Upload CSV', validators=[
@@ -86,7 +87,7 @@ class ShareDataForm(FlaskForm):
     data_type = SelectField('Data Type', choices=[('meal_plan', 'Meal Plan'), ('dietary_data', 'Dietary Data')])
     data_id = IntegerField('Data ID', validators=[DataRequired()])
     submit = SubmitField('Share')
-
+    
     def validate_recipient_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if not user:
