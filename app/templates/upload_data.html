@@ -2,6 +2,10 @@
 
 {% block title %}Upload Nutrition Data - NutriPlanner{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container my-5">
     <h1 class="mb-4 text-center">Upload Your Nutrition Data</h1>
@@ -51,6 +55,7 @@
                                 <div class="row mb-3">
                                     <div class="col-md-3">
                                         <label for="calories" class="form-label">Total Calories</label>
+                            
                                         {{ form.calories(class="form-control", id="calories", type="number", min="0") }}
                                         {% if form.calories.errors %}
                                             <div class="invalid-feedback d-block">
@@ -94,7 +99,13 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                
+                                <div class="row mb-3">
+                                    <div class="col-12 text-center">
+                                        <div class="form-text">
+                                            <a href="#" id="calorie-calculator-link">Not sure? Try our Calorie Calculator</a>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="mb-3">
                                     <label for="notes" class="form-label">Notes (optional)</label>
                                     {{ form.notes(class="form-control", id="notes", rows="3", placeholder="Add any notes about today's meals or nutrition...") }}
@@ -179,21 +190,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize date field with today's date
-    const dateField = document.getElementById('date');
-    if (dateField && !dateField.value) {
-        const today = new Date();
-        const year = today.getFullYear();
-        let month = today.getMonth() + 1;
-        let day = today.getDate();
-        
-        month = month < 10 ? '0' + month : month;
-        day = day < 10 ? '0' + day : day;
-        
-        dateField.value = `${year}-${month}-${day}`;
-    }
-});
-</script>
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
 {% endblock %}
+
