@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload Nutrition Data - NutriMate{% endblock %}
-
+{% block title %}Upload Nutrition Data - NutriPlanner{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -32,7 +31,7 @@
                             <h4 class="card-title mb-0">Manual Nutrition Data Entry</h4>
                         </div>
                         <div class="card-body p-4">
-                            <form method="POST" action="{{ url_for('routes.upload_dietary_data') }}">
+                            <form method="POST" action="{{ url_for('routes.upload_data') }}">
                                 {{ form.hidden_tag() }}
                                 
                                 <div class="row mb-3">
@@ -128,7 +127,7 @@
                             <h4 class="card-title mb-0">Upload CSV Data</h4>
                         </div>
                         <div class="card-body p-4">
-                            <form method="POST" action="{{ url_for('routes.upload_csv') }}" enctype="multipart/form-data">
+                            <form method="POST" action="{{ url_for('routes.upload_data') }}" enctype="multipart/form-data">
                                 {{ csv_form.hidden_tag() }}
                                 
                                 <div class="mb-3">
