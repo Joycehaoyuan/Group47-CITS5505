@@ -16,10 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    
-    <!-- PanMan Theme CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/panman-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> 
     
     {% block head %}{% endblock %}
 </head>
@@ -43,61 +40,43 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('routes.index') }}">
-                            <i class="fas fa-home me-1"></i> Home
-                        </a>
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('routes.index') }}">Home</a>
                     </li>
-                
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/meal-plan' %}active{% endif %}" href="{{ url_for('routes.meal_plan') }}">Meal Plan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/visualize-data' %}active{% endif %}" href="{{ url_for('routes.visualize_data') }}">Analytics</a>
+                    </li>
+                    
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/upload-data' %}active{% endif %}" href="{{ url_for('routes.upload_data') }}">
-                                <i class="fas fa-upload me-1"></i> Upload Data
-                            </a>
+                            <a class="nav-link {% if request.path == '/upload-data' %}active{% endif %}" href="{{ url_for('routes.upload_data') }}">Upload Data</a>
                         </li>
-                    {% endif %}
-                
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/meal-plan' %}active{% endif %}" href="{{ url_for('routes.meal_plan') }}">
-                            <i class="fas fa-utensils me-1"></i> Meal Plan
-                        </a>
-                    </li>
-                
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/visualize-data' %}active{% endif %}" href="{{ url_for('routes.visualize_data') }}">
-                            <i class="fas fa-chart-line me-1"></i> Analytics
-                        </a>
-                    </li>
-                
-                    {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/share-data' %}active{% endif %}" href="{{ url_for('routes.share_data') }}">
-                                <i class="fas fa-share-alt me-1"></i> Share Data
-                            </a>
+                            <a class="nav-link {% if request.path == '/share-data' %}active{% endif %}" href="{{ url_for('routes.share_data') }}">Share Data</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle me-1"></i> {{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('routes.profile') }}"><i class="fas fa-id-badge me-2"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('routes.shared_with_me') }}"><i class="fas fa-users me-2"></i> Shared with Me</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('routes.profile') }}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('routes.shared_with_me') }}">Shared with Me</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('routes.logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('routes.logout') }}">Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('routes.login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                            </a>
+                            <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="{{ url_for('routes.login') }}">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="{{ url_for('routes.register') }}">
-                                <i class="fas fa-user-plus me-1"></i> Register
-                            </a>
+                            <a class="nav-link {% if request.path == '/register' %}active{% endif %}" href="{{ url_for('routes.register') }}">Register</a>
                         </li>
                     {% endif %}
-                </ul>                           
+                </ul>
             </div>
         </div>
     </nav>

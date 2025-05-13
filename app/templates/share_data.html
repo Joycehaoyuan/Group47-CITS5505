@@ -322,22 +322,19 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for share in my_shares %}
+                                            {% for share_data in my_shares %}
                                                 <tr>
+                                                    <td>{{ share_data.recipient.username }}</td>
                                                     <td>
-                                                        {% set recipient = User.query.get(share.recipient_id) %}
-                                                        {{ recipient.username if recipient else 'Unknown User' }}
-                                                    </td>
-                                                    <td>
-                                                        {% if share.data_type == 'meal_plan' %}
+                                                        {% if share_data.share.data_type == 'meal_plan' %}
                                                             <span class="badge bg-primary">Meal Plan</span>
                                                         {% else %}
                                                             <span class="badge bg-success">Dietary Data</span>
                                                         {% endif %}
                                                     </td>
-                                                    <td>{{ share.share_date.strftime('%Y-%m-%d') }}</td>
+                                                    <td>{{ share_data.share.share_date.strftime('%Y-%m-%d') }}</td>
                                                     <td>
-                                                        <form method="POST" action="{{ url_for('routes.delete_share', share_id=share.id) }}" class="d-inline">
+                                                        <form method="POST" action="{{ url_for('routes.delete_share', share_id=share_data.share.id) }}" class="d-inline">
                                                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this share?')">
                                                                 <i class="fas fa-trash"></i> Remove
                                                             </button>
@@ -370,18 +367,40 @@
     </div>
 </div>
 
-<script type="application/json" id="meal-plans-data">
-    {% if meal_plans %}{{ meal_plans|tojson|safe }}{% else %}{}{% endif %}
-</script>
-<script type="application/json" id="dietary-data">
-    {% if dietary_data %}{{ dietary_data|tojson|safe }}{% else %}{}{% endif %}
-</script>
 <script>
-    // Define global variables
-    window.mealPlans = JSON.parse(document.getElementById('meal-plans-data').textContent);
-    window.dietaryData = JSON.parse(document.getElementById('dietary-data').textContent);
+    // Define global variables to store data generated through Jinja2 templates
+    window.mealPlans = {
+        {% if meal_plans %}
+            {% for plan in meal_plans %}
+                "{{ plan.id }}": {
+                    name: "{{ plan.name }}",
+                    dietType: "{{ plan.diet_type }}",
+                    targetCalories: {{ plan.target_calories }},
+                    mealCount: {{ plan.meal_count }},
+                    dateCreated: "{{ plan.date_created.strftime('%Y-%m-%d') }}",
+                    meals: {{ plan.get_meals()|tojson }}
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% endif %}
+    };
+    
+    // Dietary data
+    window.dietaryData = {
+        {% if dietary_data %}
+            {% for data in dietary_data %}
+                "{{ data.id }}": {
+                    date: "{{ data.date.strftime('%Y-%m-%d') }}",
+                    calories: {{ data.calories }},
+                    protein: {{ data.protein }},
+                    carbs: {{ data.carbs }},
+                    fat: {{ data.fat }},
+                    notes: "{{ data.notes|default('') }}"
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        {% endif %}
+    };
 </script>
 
-<!-- Include external JavaScript file -->
+<!-- Import JavaScript file -->
 <script src="{{ url_for('static', filename='js/share-data.js') }}"></script>
 {% endblock %}
