@@ -2,120 +2,120 @@
 
 /* Form styling */
 .meal-plan-form {
-    background-color: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    margin-bottom: 2rem;
-  }
-  
-  /* Card styling */
-  .meal-card {
-    margin-bottom: 1.5rem;
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: transform 0.2s;
-  }
-  
-  .meal-card:hover {
-    transform: translateY(-5px);
-  }
-  
-  .meal-card .card-header {
-    background-color: #6ca32c;
-    color: white;
-    padding: 0.75rem 1.25rem;
-  }
-  
-  .meal-card .card-title {
-    margin-bottom: 0;
-    font-weight: 600;
-  }
-  
-  .meal-card .card-body {
-    padding: 1.25rem;
-  }
-  
-  /* Food item styling */
-  .food-item {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-    padding: 0.75rem 0;
-  }
-  
-  .food-item:last-child {
-    border-bottom: none;
-  }
-  
-  .food-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-  
-  .food-name {
-    font-weight: 500;
-  }
-  
-  .food-calories {
-    font-weight: 500;
-    color: #6c757d;
-  }
-  
-  .food-macros {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.875rem;
-    color: #6c757d;
-  }
-  
-  /* Macro summary styling */
-  .macro-summary {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Card styling */
+.meal-card {
+  margin-bottom: 1.5rem;
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: transform 0.2s;
+}
+
+.meal-card:hover {
+  transform: translateY(-5px);
+}
+
+.meal-card .card-header {
+  background-color: #6ca32c;
+  color: white;
+  padding: 0.75rem 1.25rem;
+}
+
+.meal-card .card-title {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.meal-card .card-body {
+  padding: 1.25rem;
+}
+
+/* Food item styling */
+.food-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 0.75rem 0;
+}
+
+.food-item:last-child {
+  border-bottom: none;
+}
+
+.food-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.food-name {
+  font-weight: 500;
+}
+
+.food-calories {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.food-macros {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Macro summary styling */
+.macro-summary {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  margin-top: 1rem;
+}
+
+.macro-progress {
+  height: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-refresh {
+  background-color: #8cc63f;
+  border-color: #8cc63f;
+  color: white;
+}
+
+.btn-refresh:hover {
+  background-color: #6ca32c;
+  border-color: #6ca32c;
+}
+
+/* Calorie display styling */
+.badge.bg-light.text-dark {
+    background-color: #8fd085 !important;
+    color: #ffffff !important;
+}
+
+.text-muted {
+    color: #333333 !important;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .meal-plan-form {
     padding: 1rem;
-    border-radius: 0.25rem;
-    margin-top: 1rem;
   }
   
-  .macro-progress {
-    height: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Action buttons */
   .action-buttons {
-    display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
   }
-  
-  .btn-refresh {
-    background-color: #8cc63f;
-    border-color: #8cc63f;
-    color: white;
-  }
-  
-  .btn-refresh:hover {
-    background-color: #6ca32c;
-    border-color: #6ca32c;
-  }
-  
-  /* Calorie display styling */
-  .badge.bg-light.text-dark {
-      background-color: #8fd085 !important;
-      color: #ffffff !important;
-  }
-  
-  .text-muted {
-      color: #333333 !important;
-  }
-  
-  
-  /* Responsive adjustments */
-  @media (max-width: 767.98px) {
-    .meal-plan-form {
-      padding: 1rem;
-    }
-    
-    .action-buttons {
-      flex-direction: column;
-    }
-  }
+}

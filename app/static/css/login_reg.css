@@ -1,42 +1,68 @@
-/* Styles specific to authentication pages */
+/* CSS for Login and Registration pages */
 
-/* Login/Register form customization */
-.auth-form {
-    max-width: 450px;
+/* Card styling */
+.auth-card {
+    max-width: 500px;
     margin: 2rem auto;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    background-color: var(--bg-card);
-}
-
-.auth-form .form-group {
-    margin-bottom: 1.2rem;
-}
-
-.auth-form .btn-primary {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1.1rem;
-    margin-top: 1rem;
-}
-
-.auth-separator {
-    display: flex;
-    align-items: center;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .auth-card .card-header {
+    background-color: rgba(33, 37, 41, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 1.25rem;
+  }
+  
+  .auth-card .card-title {
+    margin-bottom: 0;
+    font-weight: 600;
+  }
+  
+  .auth-card .card-body {
+    padding: 1.5rem;
+  }
+  
+  /* Form styling */
+  .form-floating {
+    margin-bottom: 1rem;
+  }
+  
+  .form-control:focus {
+    border-color: #8cc63f;
+    box-shadow: 0 0 0 0.25rem rgba(140, 198, 63, 0.25);
+  }
+  
+  /* Button styling */
+  .btn-primary {
+    background-color: #6ca32c;
+    border-color: #6ca32c;
+  }
+  
+  .btn-primary:hover, .btn-primary:focus {
+    background-color: #5b892a;
+    border-color: #5b892a;
+  }
+  
+  /* Link styling */
+  .auth-links {
+    margin-top: 1.5rem;
     text-align: center;
-    margin: 1.5rem 0;
-}
-
-.auth-separator::before,
-.auth-separator::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.auth-separator span {
-    padding: 0 10px;
-    font-weight: 500;
-    color: var(--text-muted);
-}
+  }
+  
+  .auth-links a {
+    color: #6ca32c;
+    text-decoration: none;
+  }
+  
+  .auth-links a:hover {
+    color: #5b892a;
+    text-decoration: underline;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .auth-card {
+      margin: 1rem;
+    }
+  }
