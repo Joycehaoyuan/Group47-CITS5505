@@ -769,3 +769,21 @@ def recipe_suggestions():
         'meal_name': meal_name,
         'recipes': recipes
     })
+@bp.route('/delete-dietary-data/<int:data_id>', methods=['POST'])
+@login_required
+def delete_dietary_data(data_id):
+    """Delete a dietary data entry."""
+    data_entry = UserDietaryData.query.get_or_404(data_id)
+    
+    # Only allow deletion if the entry belongs to the current user
+    if data_entry.user_id != current_user.id:
+        abort(403)
+        
+    # Save the date for flash message
+    entry_date = data_entry.date.strftime('%Y-%m-%d')
+     
+    db.session.delete(data_entry)
+    db.session.commit()
+    
+    flash(f'Data（{entry_date}）is removed successfully', 'success')
+    return redirect(url_for('routes.visualize_data'))
