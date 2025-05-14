@@ -1,0 +1,19 @@
+#calorie-calculator-link {
+  text-align: left;
+  color: var(--bs-primary); 
+  text-decoration: none; 
+}
+
+#calorie-calculator-link:hover {
+  text-decoration: underline; 
+}
+
+.form-text {
+  text-align: left;
+  padding-left: 0; 
+  margin-left: 0px; 
+  margin-top: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+  display: block;
+}

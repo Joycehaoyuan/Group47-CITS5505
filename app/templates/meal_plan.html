@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %}Meal Plan Generator - NutriMate{% endblock %}
-
-{% block page_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/meal_plan.css') }}">
-{% endblock %}
+{% block title %}Meal Plan Generator - NutriPlanner{% endblock %}
 
 {% block head %}
-<style>
-    /* Diet type icons */
-    .diet-type-icon {
-        width: 40px;
-        height: 40px;
-        margin-bottom: 8px;
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/meal_plan.css') }}">
+
 {% endblock %}
 
 {% block content %}
 <div class="container my-4">
     <h1 class="mb-4 text-center">Create Your Meal Plan</h1>
-
+    {% if login_required_for_real_data %}
+    <div class="alert alert-info mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle me-3" style="font-size: 1.2rem;"></i>
+            <div>
+                <span>You haven't uploaded any nutrition data yet. </span>
+                <a href="{{ url_for('routes.upload_data') }}" class="alert-link">Upload your data</a>
+                <span> to see more accurate meal plans.</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     {% if login_required_for_save %}
     <!-- Login Prompt Card for Guests -->
     <div class="card border-primary mb-5">
         <div class="card-body p-4 text-center">
             <h4 class="text-primary"><i class="fas fa-info-circle me-2"></i>Guest User Mode</h4>
-            <p class="mb-4">You can create meal plans as a guest, but you'll need an account to save and track your meal
-                plans.</p>
+            <p class="mb-4">You can create meal plans as a guest, but you'll need an account to save and track your meal plans.</p>
             <div class="d-flex justify-content-center gap-3">
                 <a href="{{ url_for('routes.login') }}" class="btn btn-primary px-4">
                     <i class="fas fa-sign-in-alt me-2"></i> Log In
@@ -39,48 +39,40 @@
         </div>
     </div>
     {% endif %}
-
+    
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <div class="card shadow-sm mb-4">
                 <div class="card-body p-4">
                     <form method="POST" action="{{ url_for('routes.meal_plan') }}">
                         {{ form.hidden_tag() }}
-
+                        
                         <div class="mb-4">
                             <h4 class="mb-3">Preferred Diet</h4>
                             {{ form.diet_type(class="d-none", id="diet_type") }}
-
+                            
                             <div class="diet-type-options">
                                 <!-- Anything -->
                                 <div class="diet-type-btn" data-value="Anything">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-check-circle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle">
                                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                     </svg>
                                     <span>Anything</span>
                                 </div>
-
+                                
                                 <!-- Keto -->
                                 <div class="diet-type-btn" data-value="Keto">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-clipboard">
-                                        <path
-                                            d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2">
-                                        </path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clipboard">
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                                         <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                     </svg>
                                     <span>Keto</span>
                                 </div>
-
+                                
                                 <!-- Mediterranean -->
                                 <div class="diet-type-btn" data-value="Mediterranean">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-sunrise">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sunrise">
                                         <path d="M17 18a5 5 0 0 0-10 0"></path>
                                         <line x1="12" y1="2" x2="12" y2="9"></line>
                                         <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line>
@@ -92,56 +84,48 @@
                                     </svg>
                                     <span>Mediterranean</span>
                                 </div>
-
+                                
                                 <!-- Paleo -->
                                 <div class="diet-type-btn" data-value="Paleo">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-activity">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-activity">
                                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                                     </svg>
                                     <span>Paleo</span>
                                 </div>
-
+                                
                                 <!-- Vegan -->
                                 <div class="diet-type-btn" data-value="Vegan">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-leaf">
-                                        <path
-                                            d="M11 3C21 3 21 12 21 12C21 12 21 21 11 21C1 21 1 12 1 12C1 12 1 3 11 3Z">
-                                        </path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-leaf">
+                                        <path d="M11 3C21 3 21 12 21 12C21 12 21 21 11 21C1 21 1 12 1 12C1 12 1 3 11 3Z"></path>
                                     </svg>
                                     <span>Vegan</span>
                                 </div>
-
+                                
                                 <!-- Vegetarian -->
                                 <div class="diet-type-btn" data-value="Vegetarian">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-hexagon">
-                                        <path
-                                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                                        </path>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-hexagon">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                                     </svg>
                                     <span>Vegetarian</span>
                                 </div>
                             </div>
                         </div>
-
+                        
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <h4 class="mb-3">Daily Calorie Target</h4>
                                 <div class="input-group">
                                     <span class="input-group-text">I want to eat</span>
-                                    {{ form.target_calories(class="form-control", placeholder="1800") }}
+                                    {{ form.target_calories(class="form-control", placeholder="1800", min="800", max="5000", oninvalid="this.setCustomValidity('Value must be between 800 and 5000.')", oninput="this.setCustomValidity('')") }}
                                     <span class="input-group-text">calories</span>
                                 </div>
-                                <div class="form-text">
-                                    <a href="#" id="calorie-calculator-link">Not sure? Try our Calorie Calculator</a>
+                                {% if form.target_calories.errors %}
+                                <div class="invalid-feedback d-block">
+                                    Value must be between 800 and 5000.
                                 </div>
+                                {% endif %}
                             </div>
-
+                            
                             <div class="col-md-6">
                                 <h4 class="mb-3">Number of Meals</h4>
                                 <div class="input-group">
@@ -151,20 +135,18 @@
                                 </div>
                             </div>
                         </div>
-
+                        
                         <div class="mb-4" id="macro-recommendations">
                             <div class="alert bg-light border-0" style="background-color: #f1f9f9 !important;">
                                 <h5>Recommended Macronutrients</h5>
                                 <div class="d-flex justify-content-between">
                                     <div class="text-center">
                                         <span class="badge bg-primary d-block mb-2">Protein</span>
-                                        <strong>At least <span id="recommended-protein">{{ macros.protein
-                                                }}</span>g</strong>
+                                        <strong>At least <span id="recommended-protein">{{ macros.protein }}</span>g</strong>
                                     </div>
                                     <div class="text-center">
                                         <span class="badge bg-primary d-block mb-2">Carbs</span>
-                                        <strong>At least <span id="recommended-carbs">{{ macros.carbs
-                                                }}</span>g</strong>
+                                        <strong>At least <span id="recommended-carbs">{{ macros.carbs }}</span>g</strong>
                                     </div>
                                     <div class="text-center">
                                         <span class="badge bg-primary d-block mb-2">Fat</span>
@@ -173,70 +155,81 @@
                                 </div>
                             </div>
                         </div>
-
+                        
                         <div class="d-grid">
-                            {{ form.submit(class="btn btn-primary btn-lg", value="Generate Meal Plan") }}
+                            {% if login_required_for_real_data %}
+                                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                    Upload data first to generate a meal plan
+                                </button>
+                                <small class="text-muted text-center mt-2">
+                                    <a href="{{ url_for('routes.upload_data') }}">Click here to upload your nutrition data</a>
+                                </small>
+                            {% else %}
+                                {{ form.submit(class="btn btn-primary btn-lg", value="Generate Meal Plan") }}
+                            {% endif %}
                         </div>
                     </form>
                 </div>
             </div>
-
+            
             {% if meal_plan %}
-            <h2 class="mb-4">Today's Meal Plan</h2>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="mb-0">
-                    <strong>Total Calories:</strong>
-                    <span class="badge bg-primary">{{ meal_plan.target_calories }}</span> |
-                    <strong>Diet Type:</strong>
-                    <span class="badge bg-success">{{ meal_plan.diet_type }}</span>
-                </p>
-                <p class="mb-0 text-muted">Generated on {{ meal_plan.date_created.strftime('%B %d, %Y') }}</p>
-            </div>
-
-            {% for meal in meal_data %}
-            <div class="meal-container mb-4" data-meal-index="{{ loop.index0 }}">
-                <div class="meal-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h4>{{ meal.name }} <small class="text-muted">{{ meal.total_calories }} calories</small></h4>
-                        <div class="nutrient-pills">
-                            <span class="badge bg-primary">Protein: {{ meal.total_protein }}g</span>
-                            <span class="badge bg-primary">Carbs: {{ meal.total_carbs }}g</span>
-                            <span class="badge bg-primary">Fat: {{ meal.total_fat }}g</span>
+                <h2 class="mb-4">Today's Meal Plan</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0">
+                        <strong>Total Calories:</strong> 
+                        <span class="badge bg-primary">{{ meal_plan.target_calories }}</span> | 
+                        <strong>Diet Type:</strong> 
+                        <span class="badge bg-success">{{ meal_plan.diet_type }}</span>
+                    </p>
+                    <p class="mb-0 text-muted">Generated on {{ meal_plan.date_created.strftime('%B %d, %Y') }}</p>
+                </div>
+                
+                {% for meal in meal_data %}
+                    <div class="meal-container mb-4" data-meal-index="{{ loop.index0 }}">
+                        <div class="meal-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4>{{ meal.name }} <small class="text-muted">{{ meal.total_calories }} calories</small></h4>
+                                <div class="nutrient-pills">
+                                    <span class="badge bg-primary">Protein: {{ meal.total_protein }}g</span>
+                                    <span class="badge bg-primary">Carbs: {{ meal.total_carbs }}g</span>
+                                    <span class="badge bg-primary">Fat: {{ meal.total_fat }}g</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary refresh-meal-btn" 
+                                    data-meal-plan-id="{{ meal_plan.id }}" 
+                                    data-meal-index="{{ loop.index0 }}" 
+                                    data-bs-toggle="tooltip" 
+                                    title="Refresh this meal">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for food in meal.foods %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ food.name }}</strong>
+                                        <small class="d-block text-muted">{{ food.serving }}</small>
+                                    </div>
+                                    <span class="badge bg-light text-dark rounded-pill">{{ food.calories }} cal</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="text-end p-2">
+                            <button type="button" class="btn btn-sm btn-outline-success recipe-suggestion-btn" data-meal-name="{{ meal.name }}" data-foods="{% for food in meal.foods %}{{ food.name }}{% if not loop.last %},{% endif %}{% endfor %}">
+                                <i class="fas fa-utensils me-1"></i> Recipe Suggestions
+                            </button>
                         </div>
                     </div>
-                    <button class="btn btn-sm btn-outline-secondary refresh-meal-btn"
-                        data-meal-plan-id="{{ meal_plan.id }}" data-meal-index="{{ loop.index0 }}"
-                        data-bs-toggle="tooltip" title="Refresh this meal">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                {% endfor %}
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{{ url_for('routes.share_data') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-share-alt me-2"></i> Share This Meal Plan
+                    </a>
+                    <a href="{{ url_for('routes.upload_data') }}" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i> Upload Your Nutrition Data
+                    </a>
                 </div>
-                <ul class="list-group list-group-flush">
-                    {% for food in meal.foods %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ food.name }}</strong>
-                            <small class="d-block text-muted">{{ food.serving }}</small>
-                        </div>
-                        <span class="badge bg-light text-dark rounded-pill">{{ food.calories }} cal</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                <div class="text-end p-2">
-                    <button type="button" class="btn btn-sm btn-outline-success recipe-suggestion-btn" data-meal-name="{{ meal.name }}" data-foods="{% for food in meal.foods %}{{ food.name }}{% if not loop.last %},{% endif %}{% endfor %}">
-                        <i class="fas fa-utensils me-1"></i> Recipe Suggestions
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                <a href="{{ url_for('routes.share_data') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-share-alt me-2"></i> Share This Meal Plan
-                </a>
-                <a href="{{ url_for('routes.upload_data') }}" class="btn btn-primary">
-                    <i class="fas fa-upload me-2"></i> Upload Your Nutrition Data
-                </a>
-            </div>
             {% endif %}
         </div>
     </div>
