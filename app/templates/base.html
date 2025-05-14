@@ -2,6 +2,7 @@
 <html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NutriMate - Meal Planning Made Easy{% endblock %}</title>
     
@@ -15,10 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    
-    <!-- PanMan Theme CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/panman-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> 
     
     {% block head %}{% endblock %}
 </head>

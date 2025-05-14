@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSRF Error</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>⚠️ CSRF Validation Failed</h1>
+        <p><strong>Reason:</strong> {{ reason }}</p>
+        <p>
+            This error occurs when the form submission is missing or contains an invalid CSRF token.
+            CSRF protection helps prevent malicious cross-site requests.
+        </p>
+        <p>Please make sure:</p>
+        <ul>
+            <li>You accessed this page via a normal browser session (not incognito or private mode)</li>
+            <li>Your browser has cookies enabled</li>
+            <li>You did not refresh or directly submit the form without first visiting the page</li>
+        </ul>
+        <a href="{{ url_for('routes.register') }}">← Back to Register</a>
+    </div>
+</body>
+</html>
