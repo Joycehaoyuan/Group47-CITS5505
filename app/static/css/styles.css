@@ -293,3 +293,17 @@
     color: var(--primary-color) !important;
     text-decoration: underline;
   }
+
+    /* Chart container styles */
+.chart-container {
+    position: relative;
+    margin: 0 auto 2rem auto;
+    height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+}
