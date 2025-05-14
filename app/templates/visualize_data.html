@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
+{% block title %}Nutrition Analytics - NutriPlanner{% endblock %}
 
-{% block title %}Nutrition Analytics - NutriMate{% endblock %}
-
-{% block page_css %}
+{% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/visualize_data.css') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 
 {% block content %}
@@ -153,6 +153,7 @@
                                         <th>Carbs</th>
                                         <th>Fat</th>
                                         <th>Notes</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -164,6 +165,12 @@
                                             <td>{{ entry.carbs }}g</td>
                                             <td>{{ entry.fat }}g</td>
                                             <td>{{ entry.notes[:30] + '...' if entry.notes and entry.notes|length > 30 else entry.notes }}</td>
+                                            <td>
+                                                <!-- delete button -->
+                                                <button class="btn btn-secondary btn-sm delete-data delete-btn" data-id="{{ entry.id }}">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -280,4 +287,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chart-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/delete-data.js') }}"></script>
 {% endblock %}
