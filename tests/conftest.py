@@ -1,25 +1,3 @@
-
-import sys
-import os
-import pytest
-
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/.."))
-
-from app import create_app
-
-@pytest.fixture
-def app():
-    app = create_app()
-    app.config.update({
-        'TESTING': True,
-        'WTF_CSRF_ENABLED': False,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
-    })
-    return app
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
 import os
 import time
 import pytest
@@ -30,7 +8,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 
-
+########################
+# Pytest Configuration #
+########################
 
 def pytest_addoption(parser):
     parser.addini("selenium", "mark tests that require a live browser")
@@ -43,7 +23,9 @@ def pytest_configure(config):
         "markers", "no_auto_login: mark test to skip auto login"
     )
 
-
+##################
+# App & DB Setup #
+##################
 
 @pytest.fixture(scope="session")
 def app():
@@ -73,6 +55,9 @@ def client(app):
     """A Flask test client."""
     return app.test_client()
 
+####################
+# Live Server Spin #
+####################
 
 @pytest.fixture(scope="session")
 def live_server(app):
@@ -83,7 +68,11 @@ def live_server(app):
     thread.start()
     time.sleep(1)
     yield "http://localhost:5001"
+    # server thread exits when tests complete
 
+####################
+# Selenium Browser #
+####################
 
 @pytest.fixture(scope="session")
 def browser():
@@ -95,7 +84,9 @@ def browser():
     yield driver
     driver.quit()
 
-
+##################
+# Auto Login Hook #
+##################
 
 @pytest.fixture(autouse=True)
 def auto_login(request, live_server, browser, client):
@@ -157,7 +148,11 @@ def auto_login(request, live_server, browser, client):
             print("\nPage source at time of error:")
             print(browser.page_source)
             pytest.fail(f"Auto login failed: {str(e)}")
-   
+    # for unit tests, do nothing
+
+####################
+# Helper Utilities #
+####################
 
 @pytest.fixture
 def auth_headers(client):
