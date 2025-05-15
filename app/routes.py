@@ -24,8 +24,7 @@ def handle_csrf_error(e):
 @bp.route('/')
 def index():
     """Landing page with app introduction."""
-    return render_template('index.html')
-    
+    return render_template('index.html')   
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration page."""
@@ -780,8 +779,7 @@ def delete_dietary_data(data_id):
         abort(403)
         
     # Save the date for flash message
-    entry_date = data_entry.date.strftime('%Y-%m-%d')
-     
+    entry_date = data_entry.date.strftime('%Y-%m-%d')     
     db.session.delete(data_entry)
     db.session.commit()
     
