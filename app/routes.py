@@ -26,10 +26,6 @@ def index():
     """Landing page with app introduction."""
     return render_template('index.html')
     
-@bp.route('/meal-plan')
-def meal_plan():
-=======
-
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     """User registration page."""
