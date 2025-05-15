@@ -43,17 +43,21 @@
                         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('routes.index') }}">Home</a>
                     </li>
                     
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/upload-data' %}active{% endif %}" href="{{ url_for('routes.upload_data') }}">Upload Data</a>
+                        </li>
+                    {% endif %}
+                    
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/meal-plan' %}active{% endif %}" href="{{ url_for('routes.meal_plan') }}">Meal Plan</a>
                     </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/visualize-data' %}active{% endif %}" href="{{ url_for('routes.visualize_data') }}">Analytics</a>
                     </li>
                     
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == '/upload-data' %}active{% endif %}" href="{{ url_for('routes.upload_data') }}">Upload Data</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.path == '/share-data' %}active{% endif %}" href="{{ url_for('routes.share_data') }}">Share Data</a>
                         </li>
@@ -121,9 +125,13 @@
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled">
                         <li><a href="{{ url_for('routes.index') }}">Home</a></li>
+                        {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('routes.upload_data') }}">Upload Data</a></li>
+                        {% endif %}
                         <li><a href="{{ url_for('routes.meal_plan') }}">Meal Plan</a></li>
                         <li><a href="{{ url_for('routes.visualize_data') }}">Analytics</a></li>
                         {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('routes.share_data') }}">Share Data</a></li>
                             <li><a href="{{ url_for('routes.profile') }}">Profile</a></li>
                             <li><a href="{{ url_for('routes.logout') }}">Logout</a></li>
                         {% else %}

@@ -160,3 +160,9 @@
     margin-top: 0.5rem;
   }
 }
+
+/* Calorie display styling */
+.badge.bg-light.text-dark {
+  background-color: #8fd085 !important;
+  color: #ffffff !important;
+}
