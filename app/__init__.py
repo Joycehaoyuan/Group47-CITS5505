@@ -29,82 +29,86 @@ except ImportError:
 class Base(DeclarativeBase):
     pass
 
+# Initialize extensions
 db = SQLAlchemy(model_class=Base)
-# create the app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
-
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
-
-# Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mealplanner.db"
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# Force English language for WTForms messages
-app.config['WTF_I18N_ENABLED'] = False
-
-# Add security configuration
-app.config['SESSION_COOKIE_SECURE'] = getattr(config, 'SESSION_COOKIE_SECURE', False)
-app.config['SESSION_COOKIE_HTTPONLY'] = getattr(config, 'SESSION_COOKIE_HTTPONLY', True)
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = getattr(config, 'PERMANENT_SESSION_LIFETIME', 3600)
-
-# Configure the upload folder
-app.config['UPLOAD_FOLDER'] = getattr(config, 'UPLOAD_FOLDER', 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = getattr(config, 'MAX_CONTENT_LENGTH', 16 * 1024 * 1024)
-
-# Ensure the upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-
-# Initialize the app with the extension
-db.init_app(app)
-
-# Initialize migration
-migrate = Migrate(app, db)
-
-# Initialize login manager
 login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'routes.login'
-login_manager.login_message_category = 'info'
+csrf = CSRFProtect()
+migrate = Migrate()
 
-# Add security headers
-@app.after_request
-def add_security_headers(response):
-    # Prevent content type sniffing
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    # Enable XSS protection in browsers
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    # Prevent clickjacking
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    return response
+def create_app(test_config=None):
+    """Create and configure the Flask application."""
+    app = Flask(__name__)
+    
+    if test_config is None:
+        # Load the instance config, if it exists, when not testing
+        app.config.from_mapping(
+            SECRET_KEY=os.environ.get("SESSION_SECRET", "dev-secret-key"),
+            SQLALCHEMY_DATABASE_URI=config.DATABASE_URI,
+            SQLALCHEMY_TRACK_MODIFICATIONS=False,
+            SQLALCHEMY_ENGINE_OPTIONS={
+                "pool_recycle": 300,
+                "pool_pre_ping": True,
+            },
+            WTF_I18N_ENABLED=False,
+            SESSION_COOKIE_SECURE=getattr(config, 'SESSION_COOKIE_SECURE', False),
+            SESSION_COOKIE_HTTPONLY=getattr(config, 'SESSION_COOKIE_HTTPONLY', True),
+            SESSION_COOKIE_SAMESITE='Lax',
+            PERMANENT_SESSION_LIFETIME=getattr(config, 'PERMANENT_SESSION_LIFETIME', 3600),
+            UPLOAD_FOLDER=getattr(config, 'UPLOAD_FOLDER', 'uploads'),
+            MAX_CONTENT_LENGTH=getattr(config, 'MAX_CONTENT_LENGTH', 16 * 1024 * 1024),
+        )
+    else:
+        # Load the test config if passed in
+        app.config.update(test_config)
 
-with app.app_context():
+    # Ensure the upload directory exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+    # Initialize extensions
+    db.init_app(app)
+    login_manager.init_app(app)
+    csrf.init_app(app)
+    migrate.init_app(app, db)
+
+    # Configure login manager
+    login_manager.login_view = 'routes.login'
+    login_manager.login_message_category = 'info'
+
+    # Add security headers
+    @app.after_request
+    def add_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        return response
+
     # Import models and routes
     from app import models
     from app import routes
     
     # Register routes
     app.register_blueprint(routes.bp)
-    
-    # Create database tables
-    db.create_all()
 
-    from app.models import User, Food, MealPlan, UserDietaryData, SharedData
-    
-    # Ensure the food database has some initial data
-    if Food.query.count() == 0:
-        from app.utils import populate_initial_food_data
-        populate_initial_food_data()
+    @login_manager.user_loader
+    def load_user(user_id):
+        from app.models import User
+        return User.query.get(int(user_id))
 
-@login_manager.user_loader
-def load_user(user_id):
-    from app.models import User
-    return User.query.get(int(user_id))
+    def init_db():
+        """Initialize the database with tables and initial data."""
+        with app.app_context():
+            db.create_all()
+            from app.models import Food
+            from app.utils import populate_initial_food_data
+            if Food.query.count() == 0:
+                populate_initial_food_data()
+
+    # Initialize database if not in testing mode
+    if not app.config.get('TESTING', False):
+        init_db()
+
+    return app
+
+# Create the application instance
+app = create_app()
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
