@@ -38,8 +38,8 @@ It allows users to **create meal plans**, **upload dietary data**, **analyze nut
 ## 📱 Application Views
 
 * **Introductory View**: Landing page explaining the app's purpose and benefits
-* **Meal Plan View**: Create and customize personalized meal plans based on preferences
 * **Upload Data View**: Enter nutrition data manually or via CSV upload
+* **Meal Plan View**: Create and customize personalized meal plans based on preferences
 * **Visualization View**: Interactive charts and statistics of nutritional data
 * **Share Data View**: Select and share meal plans and nutrition data with other users
 
@@ -48,6 +48,7 @@ It allows users to **create meal plans**, **upload dietary data**, **analyze nut
 ### Virtual Environment Setup
 
 A Virtual Environment is necessary to develop and test the application. This is performed in a safe, self-contained manner through Python's Virtual Environment.
+This project uses a .env file to manage environment variables, especially for sensitive information.
 
 ### 1. Initialise a Python Virtual Environment
 
@@ -108,7 +109,28 @@ The Authentication Module handles user registration, login, logout, and account 
 * `app/routes.py`: Implements authentication-related routes and view functions.
 * `app/templates/`: Contains HTML templates (`login.html`, `register.html`).
 
-### 2. Meal Planning Module
+### 2. Upload Nutrition Tracking Module
+
+#### Function Overview
+
+The Nutrition Tracking Module enables users to record and monitor their daily nutritional intake through manual entry or CSV upload.
+
+#### Main Features
+
+* **Manual Data Entry**: Users can enter nutrition data manually, including calories, protein, carbs, and fat.
+* **CSV Upload**: Users can upload nutrition data in CSV format for bulk processing.
+* **Meal Recording**: Users can record individual meals within their daily log.
+* **Notes**: Users can add notes to their nutrition entries.
+
+#### Main Files
+
+* `app/models.py`: Defines the `UserDietaryData` model.
+* `app/forms.py`: Contains `UploadDietaryDataForm` and `UploadCSVForm`.
+* `app/routes.py`: Implements routes for data upload and processing.
+* `app/templates/`: Contains HTML templates (`upload_data.html`).
+* `app/static/js/upload.js`: Calculate calories based on user inputs.
+
+### 3. Meal Planning Module
 
 #### Function Overview
 
@@ -130,26 +152,6 @@ The Meal Planning Module allows users to generate and customize meal plans based
 * `app/templates/`: Contains HTML templates (`meal_plan.html`).
 * `app/static/js/meal-plan.js`: Client-side functionality for meal plan interaction.
 
-### 3. Nutrition Tracking Module
-
-#### Function Overview
-
-The Nutrition Tracking Module enables users to record and monitor their daily nutritional intake through manual entry or CSV upload.
-
-#### Main Features
-
-* **Manual Data Entry**: Users can enter nutrition data manually, including calories, protein, carbs, and fat.
-* **CSV Upload**: Users can upload nutrition data in CSV format for bulk processing.
-* **Meal Recording**: Users can record individual meals within their daily log.
-* **Notes**: Users can add notes to their nutrition entries.
-
-#### Main Files
-
-* `app/models.py`: Defines the `UserDietaryData` model.
-* `app/forms.py`: Contains `UploadDietaryDataForm` and `UploadCSVForm`.
-* `app/routes.py`: Implements routes for data upload and processing.
-* `app/templates/`: Contains HTML templates (`upload_data.html`).
-
 ### 4. Data Visualization Module
 
 #### Function Overview
@@ -168,6 +170,7 @@ The Data Visualization Module provides users with interactive charts and statist
 * `app/routes.py`: Implements the visualization view functions.
 * `app/templates/`: Contains HTML templates (`visualize_data.html`).
 * `app/static/js/chart-config.js`: JavaScript for generating and configuring charts.
+* `app/static/js/delete-data.js`: Delete nutritional data records.
 
 ### 5. Data Sharing Module
 
