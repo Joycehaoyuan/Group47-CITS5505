@@ -69,14 +69,16 @@ On Windows systems:
 
 `$ venv\Scripts\activate`
 
-### 3. Install Requirements
+### 3. Install Requirements and database
 
-The `requirements.txt` file contains all the Python dependencies that the application requires to run. These can be downloaded and installed with:
+The `requirements.txt` file contains all the Python dependencies that the application requires to run. And the `init_db.py` file initializes the database by creating necessary table. These can be downloaded and installed with:
 
 `$ pip install -r requirements.txt`
 
 NOTE: Your system may have `pip3` aliased as something other than `pip`.
 
+
+`$ python init_db.py`
 
 ### 4. Start the server
 
