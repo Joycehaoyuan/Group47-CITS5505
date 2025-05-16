@@ -32,25 +32,25 @@ document.addEventListener('DOMContentLoaded', function() {
                             tableRow.style.opacity = '0';
                             setTimeout(() => {
                                 tableRow.remove();
-                                showFlashMessage('营养数据已成功删除。', 'success');
+                                showFlashMessage('the data has been deleted successfully', 'success');
                                 
                                 // If no rows are left in the table, show a message
                                 const remainingRows = document.querySelectorAll('tbody tr').length;
                                 if (remainingRows === 0) {
                                     const tableBody = document.querySelector('tbody');
                                     const noDataRow = document.createElement('tr');
-                                    noDataRow.innerHTML = '<td colspan="7" class="text-center">暂无营养数据记录</td>';
+                                    noDataRow.innerHTML = '<td colspan="7" class="text-center">There are no nutritional data records for the time being</td>';
                                     tableBody.appendChild(noDataRow);
                                 }
                             }, 500);
                         }, 300);
                     } else {
-                        showFlashMessage('删除数据时出错。', 'danger');
+                        showFlashMessage('Error deleting data.', 'danger');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showFlashMessage('删除数据时发生错误。', 'danger');
+                    showFlashMessage('Error deleting data.', 'danger');
                 });
             }
         });
